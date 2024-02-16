@@ -129,14 +129,16 @@ void kernel_panic(char *msg, ...) { //f
     va_list args;
     // Indicate this is an 'info' type of message
     printf("panic: ");
+    vga_printf("panic: ");
     // Pass the message variable arguments to vprintf
     va_start(args, msg);
+    vprintf(msg, args);
+    vga_printf(msg, args);
     vprintf(msg, args);
     va_end(args);
     printf("\n");
     // Trigger a breakpoint to inspect what caused the panic
     kernel_break();
-    //TODO specification PHASE1-PAGE8 specifies that kernel panic must also print to vga
     // Exit since this is fatal
     exit(1);
 }
@@ -221,13 +223,14 @@ void kernel_command(char c) { //f TODO
     }
 }
 //d
-void kernel_exit(void) { //f TODO
+void kernel_exit(void) { //f
     /**
      * Exits the kernel
      */
     // Print to the terminal
     printf("Exiting %s...\n", OS_NAME);
-    // Print to the VGA display TODO
+    // Print to the VGA display
+    vga_printf("Exiting %s...\n", OS_NAME);
     // Exit
     exit(0);
 }
