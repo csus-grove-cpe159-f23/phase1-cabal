@@ -203,7 +203,6 @@ void kernel_command(char c) { //f TODO
         case 'k':
         case 'K':
             vga_clear();
-            //TODO
             break;
         case '+':
             kernel_set_log_level(kernel_get_log_level()+1);
@@ -211,19 +210,13 @@ void kernel_command(char c) { //f TODO
         case '-':
             kernel_set_log_level(kernel_get_log_level()-1);
             break;
-
-            // Add new commands to:
-            //  - Clear the screen (k)
-
         case KEY_ESCAPE:
             // Exit the OS if we press escape three times in a row
             kernel_escape++;
-
             if (kernel_escape >= 3) {
                 kernel_exit();
             }
             break;
-
         case KEY_NULL:
         default:
             kernel_escape = 0;
