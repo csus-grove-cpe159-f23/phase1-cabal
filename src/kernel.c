@@ -200,11 +200,20 @@ void kernel_command(char c) { //f TODO
             // Test a breakpoint (only valid when running with GDB)
             kernel_break();
             break;
+        case 'k':
+        case 'K':
+            vga_clear();
+            //TODO
+            break;
+        case '+':
+            kernel_set_log_level(kernel_get_log_level()+1);
+            break;
+        case '-':
+            kernel_set_log_level(kernel_get_log_level()-1);
+            break;
 
             // Add new commands to:
             //  - Clear the screen (k)
-            //  - Increase the kernel log level (+)
-            //  - Decrease the kernel log level (-)
 
         case KEY_ESCAPE:
             // Exit the OS if we press escape three times in a row
