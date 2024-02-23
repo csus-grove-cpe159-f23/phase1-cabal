@@ -19,7 +19,8 @@
 
 static int shiftState;
 static int capslock;
-
+static int altState;
+static int ctrlState;
 /**
  * Initializes keyboard data structures and variables
  */
@@ -27,6 +28,8 @@ void keyboard_init() {
     kernel_log_info("Initializing keyboard driver");
     shiftState = 0;
     capslock = 0;
+    ctrlState = 0;
+    altState = 0;
 }
 
 /**
@@ -61,7 +64,21 @@ unsigned int keyboard_poll(void) {
                     shiftState = 0;
                 }
         }
-        if(data == 0x3a && KEY_RELEASED(data)){
+        if(data == 0x38 || data == 0xb8) {
+            if(KEY_PRESSED(data)){
+                altState = 1;
+            }else{
+                altState = 0;
+            }
+        }
+        if(data == 0x9d || data == 0x1d){
+            if(KEY_PRESSED(data)){
+                ctrlState = 1;
+            }else{
+                ctrlState = 0;
+            }
+        }
+        if(data == 0xba){
             if(capslock == 1){
                 capslock = 0;
             }else{
@@ -321,15 +338,15 @@ unsigned int keyboard_decode(unsigned int c) {
                 return 0x3c;
         return 0x2c;
 //.
-        case 0x35:
+        case 0x34:
             if(shiftState)
                 return 0x3e;
         return 0x2e;
 ///
-        case 0x36:
+        case 0x35:
             if(shiftState)
                 return 0x3f;
-        return 0x5c;
+        return 0x2f;
 //space
         case 0x39:
             return 0x20;
@@ -338,14 +355,25 @@ unsigned int keyboard_decode(unsigned int c) {
             if(shiftState)
                 return 0x7e;
         return 0x60;
+//\|
+        case 0x2b:
+            if(shiftState)
+                return 0x7c;
+            return 0x5c;
 //tab
         case 0x0f:
             return 0x09;
 //backspace
         case 0x0e:
             return 0x08;
+//enter
+        case 0x1c:
+            return 0x0a;
+//ctrl
+    
+default:
+        return 0x00;
     }
-    return 0x00;
 }
 
 
