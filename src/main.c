@@ -18,9 +18,6 @@ void main(void) {
 
     vga_printf("Welcome to %s!\n", OS_NAME);
 
-    while(true){
-        keyboard_poll();
-    }
     // Exercise the bit_* functions
     int value = 0xdecafbad;
     int count = bit_count(value);
