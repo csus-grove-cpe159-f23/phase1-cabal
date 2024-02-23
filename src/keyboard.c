@@ -54,12 +54,14 @@ unsigned int keyboard_poll(void) {
     int ascii = KEY_NULL;
     if(status & 1){
         data = keyboard_scan();
-        if(data == 0x2a || 0x36){
-                shiftState =  0;
-                if(data & 0x80)
+        if(data == 0x2a || data == 0x36 || data == 0xAA || data == 0xB6){
+                if(KEY_PRESSED(data)){
                     shiftState = 1;
+                }else{
+                    shiftState = 0;
+                }
         }
-        if(data == 0x3a && data & 0x80){
+        if(data == 0x3a && KEY_RELEASED(data)){
             if(capslock == 1){
                 capslock = 0;
             }else{
