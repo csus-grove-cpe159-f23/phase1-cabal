@@ -30,6 +30,7 @@ void vga_init(void) {
 
     // Clear the screen
     vga_clear();
+    kernel_log_info("Initializing Done");
 
 }
 
@@ -39,9 +40,9 @@ void vga_init(void) {
 void vga_clear(void) {
     // Clear all character data, set the foreground and background colors
     vga_clear_bg(VGA_COLOR_BLACK);
-    vga_clear_fg(VGA_COLOR_WHITE);
+    vga_clear_fg(VGA_COLOR_LIGHT_GREY);
     // Set the cursor position to the top-left corner (0, 0)
-    vga_set_rowcol(0,0);
+    vga_set_rowcol(0,20);
 }
 
 /**
@@ -140,7 +141,9 @@ void vga_cursor_disable(void) {
     // Since we may need to update the vga text mode cursor position in
     // the future, ensure that we track (via software) if the cursor is
     // enabled or disabled
-    cursor_enabled = false;
+    outportb(VGA_PORT_ADDR, 0x0A);
+    outportb(VGA_PORT_DATA, (inportb(VGA_PORT_DATA) | 0X20));
+
 
 }
 
@@ -171,23 +174,19 @@ void vga_cursor_update(void) {//UNFINISHED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     // If the cursor is enabled:
     if (vga_cursor_enabled()) {
-    
-
-        
-    
         // Calculate the cursor position as an offset into
         // memory (unsigned short value)
         int position = vga_get_row() * VGA_WIDTH + vga_get_col();
 
         // Set the VGA Cursor Location High Register (0x0F)
         //   Should be the least significant byte (0x??<00>)
-        
+
         // Step 1: Select the register by writing its address to the VGA address port
         outportb(VGA_PORT_ADDR,0x0F);
-        
+
         // Step 2: Write the data to be stored in the register to the VGA data port
         outportb(VGA_PORT_DATA, (position & 0xFF));
-        
+
 
 
         // Set the VGA Cursor Location Low Register (0x0E)
@@ -195,7 +194,7 @@ void vga_cursor_update(void) {//UNFINISHED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         outportb(VGA_PORT_ADDR, 0x0E);
         outportb(VGA_PORT_DATA, ((position >> 8) & 0xFF));
     }
-    
+
 }
 
 /**
@@ -219,7 +218,7 @@ void vga_set_rowcol(int row, int col) {
         col = VGA_WIDTH - 1;
 
 
-    unsigned short position = row * VGA_WIDTH + col;
+    unsigned short position = (row * VGA_WIDTH) + col;
     outportb(VGA_PORT_ADDR, 0x0F);
     outportb(VGA_PORT_DATA, (position & 0xFF));
     outportb(VGA_PORT_ADDR, 0x0E);
@@ -266,7 +265,7 @@ void vga_set_bg(int bg) {
     unsigned short *vga_buf = VGA_BASE;
     unsigned short clear_value = VGA_ATTR(bg, cur_fg);
 
-    for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; ++i) {
+    for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++) {
         vga_buf[i] = (vga_buf[i] & 0xFF) | (clear_value << 8);
     }
 }
@@ -292,7 +291,7 @@ void vga_set_fg(int fg) {
     unsigned char cur_bg = vga_get_bg();
     unsigned short *vga_buf = VGA_BASE;
     unsigned short clear_value = VGA_ATTR(cur_bg, fg);
-    for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; ++i) {
+    for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++) {
         vga_buf[i] = (vga_buf[i] & 0xFF00) | clear_value;
     }
 }
