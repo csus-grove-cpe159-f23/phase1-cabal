@@ -36,7 +36,7 @@ void kernel_init(void) { //f
 //d
 //f log_level_function_body macro 
 #define log_level_function_body(__LEVEL__NUMBER__, __LEVEL__PRINT__STRING__) {\
-    if (kernel_log_level < KERNEL_LOG_LEVEL_ERROR) {\
+    if (kernel_log_level < __LEVEL__NUMBER__) {\
         return;\
     }\
     va_list args;\
@@ -187,6 +187,7 @@ void kernel_command(char c) { //f TODO
      * Triggers a kernel command
      */
     static int kernel_escape = 0;
+    static bool is_second_non_escape = true;
 
     switch (c) {
         case 'p':
@@ -210,8 +211,11 @@ void kernel_command(char c) { //f TODO
         case '-':
             kernel_set_log_level(kernel_get_log_level()-1);
             break;
+        case '=':
         case KEY_ESCAPE:
+            kernel_log_trace("kernel escape key pressed");
             // Exit the OS if we press escape three times in a row
+            is_second_non_escape = false;
             kernel_escape++;
             if (kernel_escape >= 3) {
                 kernel_exit();
@@ -219,7 +223,11 @@ void kernel_command(char c) { //f TODO
             break;
         case KEY_NULL:
         default:
-            kernel_escape = 0;
+            if(is_second_non_escape){
+                kernel_log_trace("kernel escape reset");
+                kernel_escape = 0;
+            }
+            is_second_non_escape = true;
             // Nothing to do
             break;
     }

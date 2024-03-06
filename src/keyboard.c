@@ -86,6 +86,10 @@ unsigned int keyboard_poll(void) {
             }
         }
         ascii = keyboard_decode(data);
+        if(ctrlState){
+            kernel_command(ascii); 
+            return 0;
+        }
         kernel_log_trace("Key Pressed. status: %4d Keycode: %5d ascii: %4d", status, data, ascii);
     }
     return ascii;
