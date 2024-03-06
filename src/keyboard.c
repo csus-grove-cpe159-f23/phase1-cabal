@@ -164,8 +164,8 @@ unsigned int keyboard_decode(unsigned int c) {
 //I
         case 0x17:
             if((capslock || shiftState) && (capslock != shiftState))
-                return 0x69;
-            return 0x49;
+                return 0x49;
+            return 0x69;
 //J
         case 0x24:
             if((capslock || shiftState) && (capslock != shiftState))
