@@ -314,11 +314,11 @@ int vga_get_fg(void) {
  * @param c - Character to print
  */
 void vga_setc(unsigned char c) {
-    kernel_log_info("Initializing setc");
+    //kernel_log_info("Initializing setc");
 
     unsigned short *vga_buf = VGA_BASE;
     vga_buf[(vga_get_row()*VGA_WIDTH)+vga_get_col()] = VGA_CHAR(vga_get_bg(), vga_get_fg(), c);
-    kernel_log_info("setc Done");
+    //kernel_log_info("setc Done");
 
 }
 
@@ -369,7 +369,11 @@ void vga_putc(unsigned char c) {
         }
     } else {
         vga_setc(c);
-        vga_set_rowcol(row, col + 1);
+        if(col == VGA_WIDTH-1){
+            vga_set_rowcol(row + 1, 0);
+        }else{
+            vga_set_rowcol(row, col + 1);
+        }
     }
 
 }
