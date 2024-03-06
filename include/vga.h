@@ -71,6 +71,8 @@ void vga_clear_bg(int bg);
  */
 void vga_clear_fg(int fg);
 
+void vga_clear_char(void);
+
 /**
  * Enables the VGA text mode cursor
  */

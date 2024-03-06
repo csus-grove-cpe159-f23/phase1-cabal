@@ -10,15 +10,14 @@
  * Forward Declarations
  */
 
-
-
-
 void vga_cursor_update(void);
 
 /**
  * Global variables in this file scope
  */
 static bool cursor_enabled = false;
+static int fg_color = VGA_COLOR_WHITE;
+static int bg_color = VGA_COLOR_RED;
 
 /**
  * Initializes the VGA driver and configuration
@@ -27,7 +26,6 @@ static bool cursor_enabled = false;
  */
 void vga_init(void) {
     kernel_log_info("Initializing VGA driver");
-
     // Clear the screen
     vga_clear();
     kernel_log_info("Initializing Done");
@@ -39,8 +37,10 @@ void vga_init(void) {
  */
 void vga_clear(void) {
     // Clear all character data, set the foreground and background colors
-    vga_clear_bg(VGA_COLOR_RED);
-    vga_clear_fg(VGA_COLOR_WHITE);
+    kernel_log_info("vga clear called");
+    vga_clear_bg(vga_get_bg());
+    vga_clear_fg(vga_get_fg());
+    vga_clear_char();
     // Set the cursor position to the top-left corner (0, 0)
     vga_set_rowcol(0,20);
 }
@@ -52,11 +52,12 @@ void vga_clear(void) {
  * @param bg background color value
  */
 void vga_clear_bg(int bg) {
+    kernel_log_trace("bg clear");
     // Iterate through all VGA memory and set only the background color bits
     unsigned short *vga_buf = VGA_BASE;
-    unsigned short clear_value = VGA_ATTR(bg, vga_get_fg());
+    unsigned short clear_value = VGA_ATTR(bg, 0);
     for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; ++i) {
-        vga_buf[i] = (vga_buf[i] ) | (clear_value << 8);
+        vga_buf[i] = (vga_buf[i] & 0x0FFF ) | (clear_value << 8);
     }
 
 }
@@ -68,11 +69,18 @@ void vga_clear_bg(int bg) {
  * @param fg foreground color value
  */
 void vga_clear_fg(int fg) {
+    kernel_log_trace("fg clear");
     // Iterate through all VGA memory and set only the foreground color bits.
     unsigned short *vga_buf = VGA_BASE;
-    unsigned short clear_value = VGA_ATTR(vga_get_bg(), fg);
+    unsigned short clear_value = VGA_ATTR(0, fg);
     for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; ++i) {
-        vga_buf[i] = (vga_buf[i] & 0xFF00) | clear_value<<8;
+        vga_buf[i] = (vga_buf[i] & 0xF0FF) | clear_value<<8;
+    }
+}
+
+void vga_clear_char(void) {
+    for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; ++i) {
+        VGA_BASE[i] = (VGA_BASE[i] & 0xFF00 );
     }
 }
 
@@ -264,13 +272,8 @@ int vga_get_col(void) {
  * @param bg - background color
  */
 void vga_set_bg(int bg) {
-    unsigned char cur_fg = vga_get_fg();
-    unsigned short *vga_buf = VGA_BASE;
-    unsigned short clear_value = VGA_ATTR(bg, cur_fg);
-
-    for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++) {
-        vga_buf[i] = (vga_buf[i] & 0xFF) | (clear_value << 8);
-    }
+    kernel_log_info("background color changed to %d",bg);
+    bg_color = bg;
 }
 
 /**
@@ -278,8 +281,7 @@ void vga_set_bg(int bg) {
  * @return background color value
  */
 int vga_get_bg(void) {
-    unsigned short *vga_buf = VGA_BASE;
-    return (vga_buf[0] >> 12) & 0xF;
+    return bg_color;
 }
 
 /**
@@ -288,15 +290,11 @@ int vga_get_bg(void) {
  * Does not modify any existing foreground colors, only sets it for
  * new operations.
  *
- * @param color - background color
+ * @param color - foreground color
  */
 void vga_set_fg(int fg) {
-    unsigned char cur_bg = vga_get_bg();
-    unsigned short *vga_buf = VGA_BASE;
-    unsigned short clear_value = VGA_ATTR(cur_bg, fg);
-    for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++) {
-        vga_buf[i] = (vga_buf[i] & 0xFF00) | clear_value;
-    }
+    kernel_log_info("forground color changed to %d",fg);
+    fg_color = fg;
 }
 
 /**
@@ -304,8 +302,7 @@ void vga_set_fg(int fg) {
  * @return foreground color value
  */
 int vga_get_fg(void) {
-    unsigned short *vga_buf = VGA_BASE;
-    return (vga_buf[0] >> 8) & 0xF;
+    return fg_color;
 }
 
 /**
@@ -315,9 +312,7 @@ int vga_get_fg(void) {
  */
 void vga_setc(unsigned char c) {
     //kernel_log_info("Initializing setc");
-
-    unsigned short *vga_buf = VGA_BASE;
-    vga_buf[(vga_get_row()*VGA_WIDTH)+vga_get_col()] = VGA_CHAR(vga_get_bg(), vga_get_fg(), c);
+    VGA_BASE[(vga_get_row()*VGA_WIDTH)+vga_get_col()] = VGA_CHAR(vga_get_bg(), vga_get_fg(), c);//TODO
     //kernel_log_info("setc Done");
 
 }
