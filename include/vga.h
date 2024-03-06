@@ -83,6 +83,8 @@ void vga_cursor_enable(void);
  */
 void vga_cursor_disable(void);
 
+void vga_cursor_toggle(void);
+
 /**
  * Indicates if the cursor is enabled or disabled
  */

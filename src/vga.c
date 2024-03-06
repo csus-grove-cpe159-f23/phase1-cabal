@@ -15,7 +15,7 @@ void vga_cursor_update(void);
 /**
  * Global variables in this file scope
  */
-static bool cursor_enabled = false;
+static bool cursor_enabled = true;
 static int fg_color = VGA_COLOR_WHITE;
 static int bg_color = VGA_COLOR_RED;
 
@@ -42,7 +42,7 @@ void vga_clear(void) {
     vga_clear_fg(vga_get_fg());
     vga_clear_char();
     // Set the cursor position to the top-left corner (0, 0)
-    vga_set_rowcol(0,20);
+    vga_set_rowcol(0,0);
 }
 
 /**
@@ -133,6 +133,7 @@ outportb(VGA_PORT_DATA, (inportb(VGA_PORT_DATA) & 0xDF));
  * Disables the VGA text mode cursor
  */
 void vga_cursor_disable(void) {
+    cursor_enabled = false;
     // All operations will consist of writing to the address port which
     // register should be set, followed by writing to the data port the value
     // to set for the specified register
@@ -156,6 +157,14 @@ void vga_cursor_disable(void) {
     outportb(VGA_PORT_DATA, (inportb(VGA_PORT_DATA) | 0X20));
 
 
+}
+
+void vga_cursor_toggle(void){ //toggles the cursor on or off when called
+    if(vga_cursor_enabled()){
+        vga_cursor_disable();
+    }else{
+        vga_cursor_enable();
+    }
 }
 
 /**

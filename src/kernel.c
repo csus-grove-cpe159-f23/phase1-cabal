@@ -201,6 +201,9 @@ void kernel_command(char c) { //f TODO
             // Test a breakpoint (only valid when running with GDB)
             kernel_break();
             break;
+        case 'c':
+            vga_cursor_toggle();
+            break;
         case 'k':
         case 'K':
             vga_clear();
