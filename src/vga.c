@@ -11,6 +11,8 @@
  */
 
 void vga_cursor_update(void);
+void vga_clear_char(void);
+void vga_cursor_toggle(void);
 
 /**
  * Global variables in this file scope

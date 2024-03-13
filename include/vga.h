@@ -71,8 +71,6 @@ void vga_clear_bg(int bg);
  */
 void vga_clear_fg(int fg);
 
-void vga_clear_char(void);
-
 /**
  * Enables the VGA text mode cursor
  */
@@ -82,8 +80,6 @@ void vga_cursor_enable(void);
  * Disables the VGA text mode cursor
  */
 void vga_cursor_disable(void);
-
-void vga_cursor_toggle(void);
 
 /**
  * Indicates if the cursor is enabled or disabled
