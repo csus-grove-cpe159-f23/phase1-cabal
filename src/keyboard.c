@@ -247,17 +247,29 @@ void keyboard_irq_handler(void) {
 }
 
 
+#define KEY_PRESSED(c) ((c & 0x80) == 0)
+#define KEY_RELEASED(c) ((c & 0x80) != 0)
+
+/*static const char keyboard_map_primary[] = {
+   '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/'
+};*/
+
+//static const char keyboard_map_secondary[]
+
+static int shiftState;
+static int capslock;
+static int altState;
+static int ctrlState;
 /**
  * Initializes keyboard data structures and variables
  */
 void keyboard_init() {
-    kernel_log_info("Initializing keyboard");
 
-    // No status keys pressed by default
-    kbd_status = 0x0;
-
-    // Register the keyboard ISR
-    interrupts_irq_register(IRQ_KEYBOARD, isr_entry_keyboard, keyboard_irq_handler);
+    kernel_log_info("Initializing keyboard driver");
+    shiftState = 0;
+    capslock = 0;
+    ctrlState = 0;
+    altState = 0;
 }
 
 /**
@@ -265,9 +277,8 @@ void keyboard_init() {
  * @return raw character data from the keyboard
  */
 unsigned int keyboard_scan(void) {
-    unsigned int c;
+    unsigned int c = KEY_NULL;
     c = inportb(KBD_PORT_DATA);
-    kernel_log_trace("keyboard: raw data [0x%02x]", c);
     return c;
 }
 
@@ -281,14 +292,48 @@ unsigned int keyboard_scan(void) {
  *         that cannot be decoded
  */
 unsigned int keyboard_poll(void) {
-    unsigned int c = KEY_NULL;
 
-    if ((inportb(KBD_PORT_STAT) & 0x1) != 0) {
-        c = keyboard_scan();
-        c = keyboard_decode(c);
+    int status = inportb(KBD_PORT_STAT);
+    int data = KEY_NULL;
+    int ascii = KEY_NULL;
+    if(status & 1){
+        data = keyboard_scan();
+        if(data == 0x2a || data == 0x36 || data == 0xAA || data == 0xB6){
+                if(KEY_PRESSED(data)){
+                    shiftState = 1;
+                }else{
+                    shiftState = 0;
+                }
+        }
+        if(data == 0x38 || data == 0xb8) {
+            if(KEY_PRESSED(data)){
+                altState = 1;
+            }else{
+                altState = 0;
+            }
+        }
+        if(data == 0x9d || data == 0x1d){
+            if(KEY_PRESSED(data)){
+                ctrlState = 1;
+            }else{
+                ctrlState = 0;
+            }
+        }
+        if(data == 0xba){
+            if(capslock == 1){
+                capslock = 0;
+            }else{
+                capslock = 1;
+            }
+        }
+        ascii = keyboard_decode(data);
+        if(ctrlState){
+            kernel_command(ascii); 
+            return 0;
+        }
+        kernel_log_trace("Key Pressed. status: %4d Keycode: %5d ascii: %4d", status, data, ascii);
     }
-
-    return c;
+    return ascii;
 }
 
 /**
@@ -318,139 +363,262 @@ unsigned int keyboard_getc(void) {
  * function should be called.
  */
 unsigned int keyboard_decode(unsigned int c) {
-    unsigned int key_pressed = KEY_PRESSED(c);
 
-    switch (c & ~0x80) {
-        case KEY_CTRL_L:
-        case KEY_CTRL_R:
-            if (key_pressed) {
-                if ((kbd_status & KEY_STATUS_CTRL) == 0) {
-                    kernel_log_trace("keyboard: CTRL pressed");
-                }
+    switch(c){
+//A
+        case 0x1e:
+            if((capslock || shiftState) && (capslock != shiftState))
+        return 0x41;
+    return 0x61;
+//B
+        case 0x30:
+            if((capslock || shiftState) && (capslock != shiftState))
+              return 0x42;
+            return 0x62;
+//C
+        case 0x2e:
+            if((capslock || shiftState) && (capslock != shiftState))
+                return 0x43;
+            return 0x63;
+//D
+        case 0x20:
+            if((capslock || shiftState) && (capslock != shiftState))
+                return 0x44;
+            return 0x64;
+//E
+        case 0x12:
+            if((capslock || shiftState) && (capslock != shiftState))
+                return 0x45;
+            return 0x65;
+//F
+        case 0x21:
+            if((capslock || shiftState) && (capslock != shiftState))
+                return 0x46;
+            return 0x66;
+//G
+        case 0x22:
+            if((capslock || shiftState) && (capslock != shiftState))
+                return 0x47;
+            return 0x67;
+//H
+        case 0x23:
+            if((capslock || shiftState) && (capslock != shiftState))
+                return 0x48;
+            return 0x68;
 
-                kbd_status |= KEY_STATUS_CTRL;
-            } else {
-                if ((kbd_status & KEY_STATUS_CTRL) != 0) {
-                    kernel_log_trace("keyboard: CTRL released");
-                }
+//I
+        case 0x17:
+            if((capslock || shiftState) && (capslock != shiftState))
+                return 0x49;
+            return 0x69;
+//J
+        case 0x24:
+            if((capslock || shiftState) && (capslock != shiftState))
+                return 0x4a;
+        return 0x6a;
+//K
+        case 0x25:
+            if((capslock || shiftState) && (capslock != shiftState))
+                return 0x4b;
+            return 0x6b;
+//L
+        case 0x26:
+            if((capslock || shiftState) && (capslock != shiftState))
+                return 0x4c;
+            return 0x6c;
+//M
+        case 0x32:
+            if((capslock || shiftState) && (capslock != shiftState))
+                return 0x4d;
+            return 0x6d;
+//N
+        case 0x31:
+            if((capslock || shiftState) && (capslock != shiftState))
+                return 0x4e;
+            return 0x6e;
+//O
+        case 0x18:
+            if((capslock || shiftState) && (capslock != shiftState))
+                return 0x4f;
+            return 0x6f;
+//P
+        case 0x19:
+            if((capslock || shiftState) && (capslock != shiftState))
+                return 0x50;
+            return 0x70;
+//Q
+        case 0x10:
+            if((capslock || shiftState) && (capslock != shiftState))
+                return 0x51;
+            return 0x71;
+//R
+        case 0x13:
+            if((capslock || shiftState) && (capslock != shiftState))
+                return 0x52;
+            return 0x72;
+//S
+        case 0x1f:
+            if((capslock || shiftState) && (capslock != shiftState))
+                return 0x53;
+            return 0x73;
+//T
+        case 0x14:
+            if((capslock || shiftState) && (capslock != shiftState))
+                return 0x54;
+        return 0x74;
+//U
+        case 0x16:
+            if((capslock || shiftState) && (capslock != shiftState))
+                return 0x55;
+            return 0x75;
+//V
+        case 0x2f:
+            if((capslock || shiftState) && (capslock != shiftState))
+                return 0x56;
+            return 0x76;
 
-                kbd_status &= ~KEY_STATUS_CTRL;
-            }
-            break;
-
-        case KEY_ALT_L:
-        case KEY_ALT_R:
-            if (key_pressed) {
-                if ((kbd_status & KEY_STATUS_ALT) == 0) {
-                    kernel_log_trace("keyboard: ALT pressed");
-                }
-
-                kbd_status |= KEY_STATUS_ALT;
-            } else {
-                if ((kbd_status & KEY_STATUS_ALT) != 0) {
-                    kernel_log_trace("keyboard: ALT released");
-                }
-
-                kbd_status &= ~KEY_STATUS_ALT;
-            }
-            break;
-
-        case KEY_SHIFT_L:
-        case KEY_SHIFT_R:
-            if (key_pressed) {
-                if ((kbd_status & KEY_STATUS_SHIFT) == 0) {
-                    kernel_log_trace("keyboard: SHIFT pressed");
-                }
-
-                kbd_status |= KEY_STATUS_SHIFT;
-            } else {
-                if ((kbd_status & KEY_STATUS_SHIFT) != 0) {
-                    kernel_log_trace("keyboard: SHIFT released");
-                }
-
-                kbd_status &= ~KEY_STATUS_SHIFT;
-            }
-            break;
-
-        case KEY_CAPS:
-            if (key_pressed) {
-                kernel_log_trace("keyboard: CAPS pressed");
-                kbd_status ^= KEY_STATUS_CAPS;
-            } else {
-                kernel_log_trace("keyboard: CAPS released");
-            }
-            break;
-
-        case KEY_NUMLOCK:
-            if (key_pressed) {
-                kbd_status ^= KEY_STATUS_NUMLOCK;
-            }
-            break;
-
-        // Handle all other input
-        default:
-            // Ignore presses, only process releases
-            if (!key_pressed) {
-                break;
-            }
-
-
-            // Choose which map to use based upon the keyboard status
-            if (c >= 0x47 && c <= 0x53) {
-                if ((kbd_status & KEY_STATUS_NUMLOCK) != 0) {
-                    c = keyboard_map_secondary[c];
-                } else {
-                    c = keyboard_map_primary[c];
-                }
-            } else if ((((kbd_status & KEY_STATUS_SHIFT) != 0)
-               ^ ((kbd_status & KEY_STATUS_CAPS)  != 0)) != 0) {
-                c = keyboard_map_secondary[c];
-            } else {
-                c = keyboard_map_primary[c];
-            }
-
-            if (kbd_status & KEY_STATUS_ALT) {
-                if (c >= '0' && c <= '9') {
-                    int n = c - '0';
-                    tty_select(n);
-                    return KEY_NULL;
-                }
-            }
-
-            if (c == KEY_ESCAPE) {
-                esc_status++;
-
-                if (esc_status == 3) {
-                    kernel_exit();
-                }
-
-                return KEY_NULL;
-            } else if (c != KEY_NULL) {
-                esc_status = 0;
-            }
-
-            if (kbd_status & KEY_STATUS_CTRL) {
-                if (c == '+' || c == '=') {
-                    kernel_set_log_level(kernel_get_log_level() + 1);
-                    return KEY_NULL;
-                } else if (c == '-' || c == '_') {
-                    kernel_set_log_level(kernel_get_log_level() - 1);
-                    return KEY_NULL;
-                }
-            }
-
-            if (c) {
-                // For now, print to the host console
-                if (c >= 0x20 && c <= 0x7f) {
-                    kernel_log_trace("keyboard: character [0x%02x] '%c'", c, c);
-                } else {
-                    kernel_log_trace("keyboard: character [0x%02x]", c);
-                }
-                return c;
-            }
-
-            break;
+//W
+        case 0x11:
+            if((capslock || shiftState) && (capslock != shiftState))
+                return 0x57;
+            return 0x77;
+//X
+        case 0x2d:
+            if((capslock || shiftState) && (capslock != shiftState))
+                return 0x58;
+            return 0x78;
+//Y
+        case 0x15:
+            if((capslock || shiftState) && (capslock != shiftState))
+                return 0x59;
+            return 0x79;
+//Z
+        case 0x2c:
+            if((capslock || shiftState) && (capslock != shiftState))
+                return 0x5a;
+            return 0x7a;
+//1
+        case 0x02:
+            if((shiftState))
+                return 0x21;
+        return 0x31;
+//2
+        case 0x03:
+            if(shiftState)
+                return 0x40;
+        return 0x32;
+//3
+        case 0x04:
+            if(shiftState)
+                return 0x23;
+        return 0x33;
+//4
+        case 0x05:
+            if(shiftState)
+                return 0x24;
+        return 0x34;
+//5
+        case 0x06:
+            if(shiftState)
+                return 0x25;
+            return 0x35;
+//6
+        case 0x07:
+            if(shiftState)
+                return 0x5e;
+        return 0x36;
+//7
+        case 0x08:
+            if(shiftState)
+                return 0x26;
+        return 0x37;
+//8
+        case 0x09:
+            if(shiftState)
+                return 0x2a;
+        return 0x38;
+//9
+        case 0x0a:
+            if(shiftState)
+                return 0x28;
+        return 0x39;
+//0
+        case 0x0b:
+            if(shiftState)
+                return 0x29;
+        return 0x30;
+//-
+        case 0x0c:
+            if(shiftState)
+                return 0x5f;
+        return 0x2d;
+//=
+        case 0x0d:
+            if(shiftState)
+                return 0x2b;
+        return 0x3d;
+//[
+        case 0x1a:
+            if(shiftState)
+                return 0x7b;
+        return 0x5b;
+//]
+        case 0x1b:
+            if(shiftState)
+                return 0x7d;
+        return 0x5d;
+//;
+        case 0x27:
+            if(shiftState)
+                return 0x3a;
+        return 0x3b;
+//'
+        case 0x28:
+            if(shiftState)
+                return 0x22;
+        return 0x27;
+//,
+        case 0x33:
+            if(shiftState)
+                return 0x3c;
+        return 0x2c;
+//.
+        case 0x34:
+            if(shiftState)
+                return 0x3e;
+        return 0x2e;
+///
+        case 0x35:
+            if(shiftState)
+                return 0x3f;
+        return 0x2f;
+//space
+        case 0x39:
+            return 0x20;
+//`
+        case 0x29:
+            if(shiftState)
+                return 0x7e;
+        return 0x60;
+//\|
+        case 0x2b:
+            if(shiftState)
+                return 0x7c;
+            return 0x5c;
+//tab
+        case 0x0f:
+            return 0x09;
+//backspace
+        case 0x0e:
+            return 0x08;
+//enter
+        case 0x1c:
+            return 0x0a;
+//ctrl
+    
+default:
+        return 0x00;
     }
-
-    return KEY_NULL;
 }
+
+
