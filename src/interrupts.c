@@ -29,6 +29,7 @@
 #define PIC2_DATA   (PIC2_BASE+1)   // address for setting data for PIC2
 #define PIC_EOI     0x20            // PIC End-of-Interrupt command
 #define IRQ_PER_PIC 8               // There are 8 irqs assigned to each PIC
+#define PIC_IRQ_MIN 32              // The PIC irqs start at 32
 //d
 // Interrupt descriptor table //f
 struct i386_gate *idt = NULL;
@@ -90,6 +91,7 @@ void interrupts_irq_register(int irq, void (*entry)(), void (*handler)()) { //f
      * @param handler - the function to be called to process the the interrupt
      */
     //d
+    kernel_log_trace("Registering an interrupt irq %d", irq);
     if (irq < 0 || irq >= IRQ_MAX) {
         kernel_panic("interrupts: Invalid IRQ %d (0x%02x)", irq, irq);
         return;
@@ -117,12 +119,11 @@ void interrupts_irq_register(int irq, void (*entry)(), void (*handler)()) { //f
     if (irq >= 0x20 && irq <= 0x2F) {
         pic_irq_enable(irq);
     }
-
     kernel_log_info("interrupts: IRQ %d (0x%02x) registered)", irq, irq);
 }
 //d
 int get_data_address_from_irq(int irq){ //f
-    if(irq<IRQ_PER_PIC){
+    if(irq<IRQ_PER_PIC+PIC_IRQ_MIN){
         return PIC1_DATA;
     }
     return PIC2_DATA;
