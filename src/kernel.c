@@ -169,7 +169,7 @@ int kernel_set_log_level(log_level_t level) { //f
     }
 
     if (prev_log_level != kernel_log_level) {
-        printf("<<kernel log level set to %d>>", kernel_log_level);
+        printf("<<kernel log level set to %d>>\n", kernel_log_level);
     }
 
     return kernel_log_level;
@@ -180,60 +180,6 @@ void kernel_break(void) { //f
      * Triggers a breakpoint (if running under GBD)
      */
     breakpoint();
-}
-//d
-void kernel_command(char c) { //f TODO
-    /**
-     * Triggers a kernel command
-     */
-    static int kernel_escape = 0;
-    static bool is_second_non_escape = true;
-
-    switch (c) {
-        case 'p':
-        case 'P':
-            // Test the kernel panic
-            kernel_panic("test panic");
-            break;
-
-        case 'b':
-        case 'B':
-            // Test a breakpoint (only valid when running with GDB)
-            kernel_break();
-            break;
-        case 'c':
-            vga_cursor_toggle();
-            break;
-        case 'k':
-        case 'K':
-            vga_clear();
-            break;
-        case '+':
-            kernel_set_log_level(kernel_get_log_level()+1);
-            break;
-        case '-':
-            kernel_set_log_level(kernel_get_log_level()-1);
-            break;
-        case '=':
-        case KEY_ESCAPE:
-            kernel_log_trace("kernel escape key pressed");
-            // Exit the OS if we press escape three times in a row
-            is_second_non_escape = false;
-            kernel_escape++;
-            if (kernel_escape >= 3) {
-                kernel_exit();
-            }
-            break;
-        case KEY_NULL:
-        default:
-            if(is_second_non_escape){
-                kernel_log_trace("kernel escape reset");
-                kernel_escape = 0;
-            }
-            is_second_non_escape = true;
-            // Nothing to do
-            break;
-    }
 }
 //d
 void kernel_exit(void) { //f

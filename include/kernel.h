@@ -98,12 +98,6 @@ int kernel_get_log_level(void);
 int kernel_set_log_level(log_level_t level);
 
 /**
- * Triggers a kernel command for debugging
- * @param c command to execute
- */
-void kernel_command(char c);
-
-/**
  * Triggers a breakpoint (if running under GDB)
  */
 void kernel_break(void);

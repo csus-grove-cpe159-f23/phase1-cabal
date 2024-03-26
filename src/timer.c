@@ -118,7 +118,9 @@ void timer_irq_handler(void) {
         if(timers[i].callback != NULL){
         // If we have a valid callback, check if it needs to be called
             // If the timer interval is hit, run the callback function
-            if((timers[i].interval % timer_ticks) == 0){
+            //Next line is the most hillarious bug I've ever seen!
+            //if((timers[i].interval % timer_ticks) == 0){
+            if((timer_ticks % timers[i].interval) == 0){
             timers[i].callback();
             // If the timer repeat is greater than 0, decrement
             if(timers[i].repeat > 0)

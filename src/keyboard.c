@@ -7,6 +7,9 @@
 #include "io.h"
 #include "kernel.h"
 #include "keyboard.h"
+#include "vga.h"
+#include "tty.h"
+#include <stdbool.h>
 
 #define KEY_PRESSED(c) ((c & 0x80) == 0)
 #define KEY_RELEASED(c) ((c & 0x80) != 0)
@@ -21,6 +24,11 @@ static int shiftState;
 static int capslock;
 static int altState;
 static int ctrlState;
+
+// Forward declaration
+void ctrl_command(char c);
+void alt_command(char c);
+
 /**
  * Initializes keyboard data structures and variables
  */
@@ -86,11 +94,16 @@ unsigned int keyboard_poll(void) {
             }
         }
         ascii = keyboard_decode(data);
+        //IDEA move this to some place which makes more sense. The fact that its in the poll seeme weird
         if(ctrlState){
-            kernel_command(ascii); 
+            ctrl_command(ascii); 
             return 0;
         }
-        kernel_log_trace("Key Pressed. status: %4d Keycode: %5d ascii: %4d", status, data, ascii);
+        if(altState){
+            alt_command(ascii); 
+            return 0;
+        }
+        kernel_log_trace("Key: status %4d code %5d ascii %4d", status, data, ascii);
     }
     return ascii;
 }
@@ -379,5 +392,67 @@ default:
         return 0x00;
     }
 }
+void alt_command(char c) { //f
+    /**
+     * deals with alt keypresses
+     */
+    if(('0'<=c)&&(c<='9')){
+        tty_select((int)(c-'0'));
+    }
+    
+}
+//d
+void ctrl_command(char c) { //f
+    /**
+     * deals with ctrl keypresses
+     */
+    static int shutdown_presses = 0;
+    static bool shutdown_press_debounce = true;
 
+    switch (c) {
+        case 'p':
+        case 'P':
+            // Test the kernel panic
+            kernel_panic("test panic");
+            break;
 
+        case 'b':
+        case 'B':
+            // Test a breakpoint (only valid when running with GDB)
+            kernel_break();
+            break;
+        case 'c':
+            vga_cursor_toggle();
+            break;
+        case 'k':
+        case 'K':
+            vga_clear();
+            break;
+        case '+':
+            kernel_set_log_level(kernel_get_log_level()+1);
+            break;
+        case '-':
+            kernel_set_log_level(kernel_get_log_level()-1);
+            break;
+        case '=':
+        case KEY_ESCAPE:
+            kernel_log_trace("kernel escape key pressed");
+            // Exit the OS if we press escape three times in a row
+            shutdown_press_debounce = false;
+            shutdown_presses++;
+            if (shutdown_presses >= 3) {
+                kernel_exit();
+            }
+            break;
+        case KEY_NULL:
+        default:
+            if((shutdown_press_debounce)&&(shutdown_presses!=0)){
+                kernel_log_trace("kernel escape reset");
+                shutdown_presses = 0;
+            }
+            shutdown_press_debounce = true;
+            // Nothing to do
+            break;
+    }
+}
+//d

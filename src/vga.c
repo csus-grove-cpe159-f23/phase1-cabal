@@ -26,9 +26,11 @@ static int bg_color = VGA_COLOR_RED;
  */
 void vga_init(void) {
     kernel_log_info("Initializing VGA driver");
+    // Disable the cursor
+    vga_cursor_disable();
     // Clear the screen
     vga_clear();
-    kernel_log_info("Initializing Done");
+    kernel_log_info("VGA: Initialization complete");
 
 }
 
