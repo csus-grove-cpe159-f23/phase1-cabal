@@ -128,7 +128,7 @@ void tty_refresh(void) {
         for (int y = 0; y < VGA_HEIGHT; ++y) {
             for (int x = 0; x < VGA_WIDTH; ++x) {
                 char c = active_tty->buf[x + y * VGA_WIDTH];
-                vga_putc_at(y, x, active_tty->color_bg, active_tty->color_fg, c);
+                vga_putc_at(x, y, active_tty->color_bg, active_tty->color_fg, c);
             }
         }
         active_tty->refresh = 0;

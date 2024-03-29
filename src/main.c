@@ -5,37 +5,53 @@
  * Operating system entry point
  */
 
-#include "vga.h"
-#include "keyboard.h"
-#include "bit.h"
 #include "interrupts.h"
+#include "kernel.h"
+#include "keyboard.h"
 #include "timer.h"
 #include "tty.h"
+#include "vga.h"
 
-static int my_int = 0;
-void test_print(void){
-    printf("test_print %d\n", my_int);
-    my_int++;
-}
+#include "test.h"
 
-void main(void) {
+int main(void) {
+    // Always iniialize the kernel
+    kernel_init();
 
-    //initialize drivers
-    vga_init();
+    // Initialize interrupts
     interrupts_init();
-    keyboard_init();
+
+    // Initialize timers
     timer_init();
+
+    // Initialize the TTY
     tty_init();
+
+    // Initialize the VGA driver
+    vga_init();
+
+    // Initialize the keyboard driver
+    keyboard_init();
+
+    // Test initialization
+    test_init();
+
+    // Print a welcome message
     vga_printf("Welcome to %s!\n", OS_NAME);
+    vga_puts("Press a key to continue...\n");
+
+    // Wait for a key to be pressed
     keyboard_getc();
+
+    // Clear the screen
+    vga_clear();
+
+    // Enable interrupts
     interrupts_enable();
-    timer_callback_register(test_print, 300, 10);
+
     // Loop in place forever
-    while (1) {
-        char c = keyboard_poll();
-        if (c) {
-            tty_update(c);
-        }
-    }
-    // We should never get here!
+    while (1);
+
+    // Should never get here!
+    return 0;
 }

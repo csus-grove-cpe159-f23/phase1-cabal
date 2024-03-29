@@ -9,6 +9,7 @@
 #include "keyboard.h"
 #include "vga.h"
 #include "tty.h"
+#include "interrupts.h"
 #include <stdbool.h>
 
 #define KEY_PRESSED(c) ((c & 0x80) == 0)
@@ -29,6 +30,13 @@ static int ctrlState;
 void ctrl_command(char c);
 void alt_command(char c);
 
+void keyboard_irq_handler(void){
+    char c = keyboard_poll();
+    if(c){
+        tty_update(c);
+    }
+}
+
 /**
  * Initializes keyboard data structures and variables
  */
@@ -38,6 +46,7 @@ void keyboard_init() {
     capslock = 0;
     ctrlState = 0;
     altState = 0;
+    interrupts_irq_register(IRQ_KEYBOARD,isr_entry_keyboard,keyboard_irq_handler);
 }
 
 /**
@@ -422,7 +431,11 @@ void ctrl_command(char c) { //f
             kernel_break();
             break;
         case 'c':
-            vga_cursor_toggle();
+            if(get_vga_cursor_enabled()){
+                vga_cursor_disable();
+            }else{
+                vga_cursor_enable();
+            }
             break;
         case 'k':
         case 'K':
