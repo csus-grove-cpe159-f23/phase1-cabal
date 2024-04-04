@@ -12,7 +12,7 @@
 #endif
 
 #ifndef TTY_SCROLLBACK
-#define TTY_SCROLLBACK  0   // Number of lines in the scrollback buffer
+#define TTY_SCROLLBACK  0   // Number of lines in the scrollback buffer. 0 if not implemented.
 #endif
 
 #define TTY_WIDTH       80  // Width of the TTY
@@ -36,8 +36,10 @@ typedef struct tty_t {
     int pos_x;                  // current x position in the screen
     int pos_y;                  // current y position in the screen
 
-    int pos_scroll;             // Current scrollback position in the buffer
-    int echo;                   //echi set to true
+    int pos_scroll;             // Current scrollback position in the buffer 
+                                // If you choose to implement scrollbac, ensure that 
+                                // the text on each row will "scroll" upwareds when the last
+                                // row/column is reached
 } tty_t;
 
 /**
@@ -52,18 +54,11 @@ void tty_init(void);
  */
 void tty_select(int tty);
 
-/*****
-ty_putc will be very similar to the vga_putc function in that it will update an individual
-character at a time, but instead of directly into the VGA memory, it should use the buf
-member of the ty_t structure. The function should handle at a minimum the following
-control characters:
-1. \t - tab character
-2. \b - backspace character
-3. \r - carriage return
-13
-4. \n - new line *****/
-
-void tty_putc(struct tty_t *tty, char c);
+/**
+ * Returns the active TTY id
+ * @return TTY id or -1 on error
+ */
+int tty_get_active(void);
 
 /**
  * Updates the TTY with the given character
@@ -93,4 +88,3 @@ void tty_scroll_top(void);
 void tty_scroll_bottom(void);
 
 #endif
-

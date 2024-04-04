@@ -136,18 +136,11 @@ void tty_refresh(void) {
     kernel_log_trace("tty refresh called");
 }
 
-
-void tty_input(char c) {
-    if (!active_tty) {
-        return;
+int tty_get_active(){
+    if(!active_tty){
+        return -1;
     }
-
-    tty_putc(active_tty, c);
-
-    // Check if echo is enabled and update TTY buffer if necessary
-    if (1) { //should be "active_tty->echo" but we dont have an echo flag
-        tty_putc(active_tty, c);
-    }
+    return active_tty->id;
 }
 
 void tty_putc(struct tty_t *tty, char c) {
