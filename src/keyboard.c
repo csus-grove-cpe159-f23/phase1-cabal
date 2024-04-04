@@ -10,6 +10,7 @@
 #include "vga.h"
 #include "tty.h"
 #include "interrupts.h"
+#include "kproc.h"
 #include <stdbool.h>
 
 #define KEY_PRESSED(c) ((c & 0x80) == 0)
@@ -430,7 +431,16 @@ void ctrl_command(char c) { //f
             // Test a breakpoint (only valid when running with GDB)
             kernel_break();
             break;
+        case 'n':
+        case 'N':
+            kproc_create(kproc_test,"test", PROC_TYPE_USER);
+            break;
+        case 'q':
+        case 'Q':
+            kproc_destroy(active_proc);
+            break;
         case 'c':
+        case 'C':
             if(get_vga_cursor_enabled()){
                 vga_cursor_disable();
             }else{
