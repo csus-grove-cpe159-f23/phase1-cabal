@@ -130,12 +130,13 @@ void kernel_exit(void);
 void kernel_context_enter(trapframe_t *trapframe);
 
 /* The following functions are written directly in assembly */
-__BEGIN_DECLS
+//I have no idea where __BEGIN_DECLS and __END_DECLS were supposed to be defined. Luckily from what I looked up they should be equivilant to nothing when using a c compiler. which we are, so kill them.
+//__BEGIN_DECLS
 /**
  * Exits the kernel context and restores the process context
  */
 extern void kernel_context_exit();
-__END_DECLS
+//__END_DECLS
 
 #endif
 #endif
