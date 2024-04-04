@@ -1,5 +1,5 @@
 /** //f
- * CPE/CSC 159 - Operating System Pragmatics
+  * CPE/CSC 159 - Operating System Pragmatics
  * California State University, Sacramento
  *
  * Kernel functions
@@ -14,6 +14,9 @@
 #include "kernel.h"
 #include "vga.h"
 #include "keyboard.h"
+#include "trapframe.h"
+#include "interrupts.h"
+#include "scheduler.h"
 //d
 //f set detault log level
 // this feels like it should be in the header but ok
@@ -55,7 +58,7 @@ void kernel_log_error(char *msg, ...) { //f
     //d
     log_level_function_body(KERNEL_LOG_LEVEL_ERROR,"error: ")
 }
-//d 
+//d
 void kernel_log_warn(char *msg, ...) { //f
     /** //f
      * Prints a kernel log message to the host with a warning log level
@@ -195,3 +198,18 @@ void kernel_exit(void) { //f
 }
 //d
 
+void kernel_context_enter(trapframe_t *trapframe){
+    if(active_proc){
+        active_proc->trapframe = trapframe;
+    }
+
+    interrupts_irq_handler(trapframe->interrupt);
+
+    scheduler_run();
+
+    if(!active_proc){
+        kernel_panic("No active process!");
+    }
+
+    kernel_context_exit(active_proc->trapframe);
+}

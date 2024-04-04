@@ -7,6 +7,14 @@
 #ifndef KERNEL_H
 #define KERNEL_H
 
+#define KSTACK_SIZE 16384
+#define KCODE_SEG 0x08
+#define KDATA_SEG 0x10
+
+#ifndef ASSEMBLER
+#include "kproc.h"
+#include <spede/machine/asmacros.h>
+
 #ifndef OS_NAME
 #define OS_NAME "MyOS"
 #endif
@@ -21,6 +29,9 @@ typedef enum log_level {
     KERNEL_LOG_LEVEL_TRACE, // Log trace, debug, info, warnings, and errors
     KERNEL_LOG_LEVEL_ALL    // Log everything!
 } log_level_t;
+
+//global pointer to the current active process.
+extern proc_t *active_proc;
 
 /**
  * Kernel initialization
@@ -107,4 +118,12 @@ void kernel_break(void);
  */
 void kernel_exit(void);
 
+void kernel_context_enter(trapframe_t *trapframe);
+
+//Following functions are written irectly in assembly.
+__BEGIN_DECLS
+//Exits the kernel context, restoring the process.
+extern void kernel_context_exit();
+__END_DECLS
+#endif
 #endif
