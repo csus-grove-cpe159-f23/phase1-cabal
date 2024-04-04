@@ -191,7 +191,7 @@ int kproc_create(void *proc_ptr, char *proc_name, proc_type_t proc_type) { //f
     proc->trapframe->es = get_es();
     proc->trapframe->fs = get_fs();
     proc->trapframe->gs = get_gs();
-    //figure out if this needs modification? TODO?
+    // figure out if this needs modification? TODO?
 
     // Add the process to the scheduler
     scheduler_add(proc);
@@ -208,10 +208,18 @@ int kproc_destroy(proc_t *proc) { //f
      * @return 0 on success, -1 on error
      */
     //d
+    if(proc->pid==0){
+        kernel_log_trace("User attempted to shut down idle process. get noped :P");
+        return -1;
+    }
     // Remove the process from the scheduler
     scheduler_remove(proc);
+    //can if our proc is the active proc be sure to clear that out too!
+    if(proc == active_proc){
+        active_proc = NULL;
+    }
     // Clear/Reset all process data (process control block, stack, etc) related to the process
-    memset(&proc,0,sizeof(proc_t));
+    memset(&proc,0,sizeof(proc_t)); // boop :)
     // Add the process entry/index value back into the process allocator
     // also deal with queue full error condition
     int success = queue_in(&proc_allocator, proc_to_entry_no_validity_check(proc));
