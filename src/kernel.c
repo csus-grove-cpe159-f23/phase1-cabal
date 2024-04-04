@@ -14,6 +14,8 @@
 #include "kernel.h"
 #include "vga.h"
 #include "keyboard.h"
+#include "scheduler.h"
+#include "interrupts.h"
 //d
 //f set detault log level
 // this feels like it should be in the header but ok
@@ -143,7 +145,29 @@ void kernel_panic(char *msg, ...) { //f
     exit(1);
 }
 //d
-
+void kernel_context_enter(trapframe_t *trapframe){ //f
+    //called to deal with every possible interrupt
+    //f save the previous process
+    if(active_proc){
+        active_proc->trapframe = trapframe;
+    }
+    //d
+    //f handle the interrupt
+    interrupts_irq_handler(trapframe->interrupt);
+    //d
+    //f decide what to run next
+    scheduler_run();
+    //d
+    //f deal with there being no processes to run
+    if(!active_proc){
+        kernel_panic("scheduler could not find process to run, not even the idle process!");
+    }
+    //d
+    //f run the process that was selected
+    kernel_context_exit();
+    //d
+}
+//d
 int kernel_get_log_level(void) { //f
     /**
      * Returns the current log level
