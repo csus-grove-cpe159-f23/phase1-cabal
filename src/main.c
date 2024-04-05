@@ -35,11 +35,12 @@ int main(void) {
     // Initialize the keyboard driver
     keyboard_init();
 
-    // Initialize processes
-    kproc_init();
-
     // Initialize the scheduler
     scheduler_init();
+
+    //THIS NEEDS TO BE AFTER THE SCHEDULER - Hannah
+    // Initialize processes
+    kproc_init();
 
     // Test initialization
     test_init();

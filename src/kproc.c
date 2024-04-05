@@ -130,7 +130,6 @@ proc_t * entry_to_proc(int entry) { //f
         return NULL;
     }
     if(proc->state == NONE){
-        kernel_log_error("requested by entry %d is an inactive process. Specification dicates that this is an error for reasons that are unclear. entry_to_proc", entry);
         return NULL;
     }
     return proc;
@@ -220,7 +219,7 @@ int kproc_destroy(proc_t *proc) { //f
         active_proc = NULL;
     }
     // Clear/Reset all process data (process control block, stack, etc) related to the process
-    memset(&proc,0,sizeof(proc_t)); // boop :)
+    memset(proc,0,sizeof(proc_t)); // boop :)
     // Add the process entry/index value back into the process allocator
     // also deal with queue full error condition
     int success = queue_in(&proc_allocator, proc_to_entry_no_validity_check(proc));
@@ -264,9 +263,9 @@ void kproc_init(void) { //f
     //   - process allocator DONE
     //   - process stack DONE
     //f init the objects!
-    memset(&proc_table,0,sizeof(proc_t)*PROC_MAX);
+    memset(proc_table,0,sizeof(proc_t)*PROC_MAX);
     queue_init(&proc_allocator);
-    memset(&proc_stack,0,sizeof(char)*PROC_MAX*PROC_STACK_SIZE);
+    memset(proc_stack,0,sizeof(char)*PROC_MAX*PROC_STACK_SIZE);
     //d
     //f fill the queue with its avaliable entry slots!
     int i;
@@ -275,8 +274,11 @@ void kproc_init(void) { //f
     }
     //d
     // Create the idle process (kproc_idle) as a kernel process DONE
+    // this makes no sense. kproc create relies on the scheduler which is not intialized until after kproc hannah moved this to the scheduler init because that at least makes some more sense
+    // ok I think i figured it out. scheduler_init is supposed to be run before the kproc_init because it actually has no dependency on kproc weird right?
     char * idle = "idle";
     kproc_create(kproc_idle, idle, PROC_TYPE_KERNEL);
+    scheduler_run();
     kernel_log_info("Process management initialized");// TODO remove this line
 }
 //d

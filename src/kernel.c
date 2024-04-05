@@ -165,7 +165,7 @@ void kernel_context_enter(trapframe_t *trapframe){ //f
     }
     //d
     //f run the process that was selected
-    kernel_context_exit();
+    kernel_context_exit(active_proc->trapframe);
     //d
 }
 //d
