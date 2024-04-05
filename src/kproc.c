@@ -55,11 +55,11 @@ proc_t *pid_to_proc(int pid) { //f
     // Ensure that the process control block actually refers to a valid process
     proc_t * proc = pid_to_proc_no_validity_check(pid);
     if(proc == NULL){
-        kernel_log_error("process with requeted pid (%d) not found in pid_to_proc");
+        kernel_log_trace("process with requeted pid (%d) not found in pid_to_proc");
         return NULL;
     }
     if(proc->state == NONE){
-        kernel_log_error("process with requeted pid (%d) is inactive an thus invalid pid_to_proc");
+        kernel_log_trace("process with requeted pid (%d) is inactive an thus invalid pid_to_proc");
         return NULL;
     }
     return proc;
@@ -78,7 +78,7 @@ int proc_to_entry_no_validity_check(proc_t *proc) { //f
     //d
     //f deal with no index found!
     if(index == -1){
-        kernel_log_error("no index found for requested pointer %x from proc_to_entry_no_validity_check", (int)proc);
+        kernel_log_trace("no index found for requested pointer %x from proc_to_entry_no_validity_check", (int)proc);
         return -1;
     }
     //d
@@ -97,11 +97,10 @@ int proc_to_entry(proc_t *proc) { //f
     // Ensure that the process control block actually refers to a valid process
     int entry = proc_to_entry_no_validity_check(proc);
     if(entry == -1){
-        kernel_log_error("no index found for requested pointer %x from proc_to_entry", (int)proc);
+        kernel_log_trace("no index found for requested pointer %x from proc_to_entry", (int)proc);
         return -1;
     }
     if(proc->state == NONE){
-        kernel_log_error("process which entry was requested of is an inactive process. Specification dicates that this is an error for reasons that are unclear. proc_to_entry");
         return -1;
     }
     return entry;
@@ -115,7 +114,7 @@ proc_t * entry_to_proc_no_validity_check(int entry) { //f
     // For the given entry number, return a pointer to the process table entry
     // Ensure that the process control block actually refers to a valid process
     if((entry<0)||(entry>PROC_MAX)){
-        kernel_log_error("invalid entry number %d requested from entry_to_proc_no_validity_check", entry);
+        kernel_log_trace("invalid entry number %d requested from entry_to_proc_no_validity_check", entry);
         return NULL;
     }
     proc_t * return_value = proc_table + entry;
@@ -126,7 +125,7 @@ proc_t * entry_to_proc_no_validity_check(int entry) { //f
 proc_t * entry_to_proc(int entry) { //f
     proc_t* proc = entry_to_proc_no_validity_check(entry);
     if(proc == NULL){
-        kernel_log_error("invalid entry number %d requested from entry_to_proc", entry);
+        kernel_log_trace("invalid entry number %d requested from entry_to_proc", entry);
         return NULL;
     }
     if(proc->state == NONE){
