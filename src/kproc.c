@@ -231,6 +231,10 @@ void kproc_idle(void) { //f
      * Idle Process
      */
     //d
+    // fun fact this is actually never run at all. Like ever. watch:
+    proc_t * something = NULL;
+    something->state = IDLE;
+    // watch the program not segfault here because it literally never comes here. The kernel is never placed in this context because the kernel context of the starting kernel is the initial state of the machine. when the first interrupt is called the initial kernel state is stored in the trapframe, at which point the trapframe is the only place pointing to this kproc_idle function. so essentially the pointer of this function gets set up just to be overridden. The kernel will not exit into it without an interrupt and an interrupt will always overwrite where the pointer to this function is written in the trapframe. so this function will literally never be run. cool right?
     while (1) {
         // Ensure interrupts are enabled
         asm("sti");
