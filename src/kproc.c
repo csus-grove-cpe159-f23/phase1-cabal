@@ -118,7 +118,8 @@ proc_t * entry_to_proc_no_validity_check(int entry) { //f
         kernel_log_error("invalid entry number %d requested from entry_to_proc_no_validity_check", entry);
         return NULL;
     }
-    proc_t * return_value = &(proc_table[entry]);
+    proc_t * return_value = proc_table + entry;
+    kernel_log_trace("proc: %x vs %x entry_to_proc_no_validity_check", return_value, proc_table);
     return return_value;
 }
 //d
@@ -153,14 +154,14 @@ int kproc_create(void *proc_ptr, char *proc_name, proc_type_t proc_type) { //f
         kernel_log_error("kernel attempted to create process when no process blocks were avaliable");
         return -1;
     }
+    kernel_log_trace("process slot %d allocated kproc_create", process_index);//TODO remove
     //d
     //f locate corresponding process
     proc = entry_to_proc_no_validity_check(process_index);
     //d
     // Initialize the process control block
-    memset(&proc,0,sizeof(proc_t));
+    memset(proc,0,sizeof(proc_t));
     // Initialize the process stack via proc_stack
-    // proc->stack = ...
     proc->stack = (unsigned char*)proc_stack[process_index];
     // Initialize the trapframe pointer at the bottom of the stack
     proc->trapframe = (trapframe_t *)(&proc->stack[PROC_STACK_SIZE - sizeof(trapframe_t)]);
@@ -196,8 +197,8 @@ int kproc_create(void *proc_ptr, char *proc_name, proc_type_t proc_type) { //f
     // Add the process to the scheduler
     scheduler_add(proc);
 
-    kernel_log_info("Created process %s (%d) entry=%d", proc->name, proc->pid, -1);
-    return -1;
+    kernel_log_info("Created process %s (%d) entry=%d", proc->name, proc->pid, process_index);
+    return proc->pid;
 }
 //d
 int kproc_destroy(proc_t *proc) { //f
@@ -274,7 +275,9 @@ void kproc_init(void) { //f
     }
     //d
     // Create the idle process (kproc_idle) as a kernel process DONE
-    kproc_create(kproc_idle, "idle", PROC_TYPE_KERNEL);
+    char * idle = "idle";
+    kproc_create(kproc_idle, idle, PROC_TYPE_KERNEL);
+    kernel_log_info("Process management initialized");// TODO remove this line
 }
 //d
 
