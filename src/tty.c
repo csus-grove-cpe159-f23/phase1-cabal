@@ -133,7 +133,7 @@ void tty_refresh(void) {
         }
         active_tty->refresh = 0;
     }
-    kernel_log_trace("tty refresh called");
+    //kernel_log_trace("tty refresh called");
 }
 
 int tty_get_active(){

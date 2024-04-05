@@ -42,7 +42,7 @@ void scheduler_run(void) { //f
  * Should ensure that `active_proc` is set to a valid process entry
  */
     // Ensure that processes not in the active state aren't still scheduled
-    kernel_log_info("scheduler run");
+    //kernel_log_info("scheduler run");
 
     // Check if we have an active process //f
     if(active_proc != NULL){

@@ -119,7 +119,7 @@ proc_t * entry_to_proc_no_validity_check(int entry) { //f
         return NULL;
     }
     proc_t * return_value = proc_table + entry;
-    kernel_log_trace("proc: %x vs %x entry_to_proc_no_validity_check", return_value, proc_table);
+    //kernel_log_trace("proc: %x vs %x entry_to_proc_no_validity_check", return_value, proc_table);
     return return_value;
 }
 //d
@@ -219,6 +219,7 @@ int kproc_destroy(proc_t *proc) { //f
         active_proc = NULL;
     }
     // Clear/Reset all process data (process control block, stack, etc) related to the process
+    proc->state = NONE;
     memset(proc,0,sizeof(proc_t)); // boop :)
     // Add the process entry/index value back into the process allocator
     // also deal with queue full error condition
