@@ -127,7 +127,7 @@ void tty_refresh(void) {
         kernel_panic("No TTY is selected!");
         return;
     }
-    while(ringbuf_is_empty(&(active_tty->io_output))){
+    while(!ringbuf_is_empty(&(active_tty->io_output))){
         char c;
         int success = ringbuf_read(&(active_tty->io_output), &c);
         if (success==-1){
