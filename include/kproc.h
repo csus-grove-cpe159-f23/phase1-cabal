@@ -20,8 +20,8 @@
 #define PROC_NAME_LEN   32   // Maximum length of a process name
 #define PROC_STACK_SIZE 8192 // Process stack size
 
-#define PROC_IO_STDIN 0
-#define PROC_IO_STDOUT 1
+#define PROC_IO_IN 0
+#define PROC_IO_OUT 1
 
 // Process types
 typedef enum proc_type_t {
