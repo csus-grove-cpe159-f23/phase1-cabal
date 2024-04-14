@@ -30,6 +30,10 @@ void tty_init(void) {
         tty_table[i].pos_x = 0;
         tty_table[i].pos_y = 0;
         tty_table[i].pos_scroll = 0;
+        //I think this should be all the intialization needed for phase 4 tty. I ak a bit iffy on my use of pointer directions here, but I think it should be ok. I should probably still ask Dylan though! -Hannah
+        tty_table[i].echo=0;
+        ringbuf_init(&(tty_table[i].io_output));
+        ringbuf_init(&(tty_table[i].io_input));
     }
 
     // Select tty 0 to start with
@@ -123,6 +127,14 @@ void tty_refresh(void) {
         kernel_panic("No TTY is selected!");
         return;
     }
+    while(ringbuf_is_empty(&(active_tty->io_output))){
+        char c;
+        int success = ringbuf_read(&(active_tty->io_output), &c);
+        if (success==-1){
+            kernel_log_error("tty io_output buffer read failed.");
+        }
+        tty_update(c);
+    }
 
     if (active_tty->refresh) {
         for (int y = 0; y < VGA_HEIGHT; ++y) {
@@ -135,6 +147,74 @@ void tty_refresh(void) {
     }
     //kernel_log_trace("tty refresh called");
 }
+
+tty_t * tty_get(int tty){ //f
+/**
+ * Returns the tty structure for the given tty number
+ * @param tty_number - tty number/identifier
+ * @return NULL on error or pointer to entry in the tty table
+ */
+    if(
+            (tty<0)
+            ||
+            (tty>=(int)(sizeof(tty_table)/sizeof(tty_t)))
+    ){
+            kernel_log_warn("Invalid tty number requested tty_get");
+            return NULL;
+    }
+    return(&(tty_table[tty]));
+}
+//d
+
+void tty_input(char c){
+    /** //f
+     * Write a character into the TTY process input buffer
+     * If the echo flag is set, will also write the character into the TTY
+     * process output buffer
+     * @param c - character to write into the input buffer
+     */
+    //d
+    ringbuf_write(&(active_tty->io_input), c);
+    if(active_tty->echo){
+        ringbuf_write(&(active_tty->io_output), c);
+    }
+}
+
+//TODO as far as I am aware the scrollback buffer is not impemented. It was mentioned in the template code but not in the docs. I am marking this as OPTIONAL for that reason. -Hannah
+void tty_scroll_up(void){ //f
+/** //f
+ * Scrolls the TTY up one line into the scrollback buffer
+ * If the buffer is at the top, it will not scroll up further
+ */
+//d
+//TODO
+}
+//d
+void tty_scroll_down(void){ //f
+/** //f
+ * Scrolls the TTY down one line into the scrollback buffer
+ * If the buffer is at the end, it will not scroll down further
+ */
+//d
+//TODO
+}
+//d
+void tty_scroll_top(void){ //f
+/** //f
+ * Scrolls to the top of the buffer
+ */
+//d
+//TODO
+}
+//d
+void tty_scroll_bottom(void){ //f
+/** //f
+ * Scrolls to the bottom of the buffer
+ */
+//d
+//TODO
+}
+//d
 
 int tty_get_active(){
     if(!active_tty){
