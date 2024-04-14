@@ -152,7 +152,7 @@ int kproc_create(void *proc_ptr, char *proc_name, proc_type_t proc_type) { //f
         kernel_log_error("kernel attempted to create process when no process blocks were avaliable");
         return -1;
     }
-    kernel_log_trace("process slot %d allocated kproc_create", process_index);//TODO remove
+    //kernel_log_trace("process slot %d allocated kproc_create", process_index);
     //d
     //f locate corresponding process
     proc = entry_to_proc_no_validity_check(process_index);
@@ -174,7 +174,11 @@ int kproc_create(void *proc_ptr, char *proc_name, proc_type_t proc_type) { //f
     proc->type = proc_type;
     proc->run_time = 0;
     proc->cpu_time = 0;
+    proc->sleep_time = 0;
     proc->start_time = timer_get_ticks();
+    proc->scheduler_queue = NULL;
+    //I forgot the star on the next line the first time through and caused a segfault. whoops! -Hannah
+    memset(proc->io,0,sizeof(ringbuf_t*)*PROC_IO_MAX);
     // Copy the passed-in name to the name buffer in the process control block
     strcpy(proc->name, proc_name);
 
@@ -190,7 +194,6 @@ int kproc_create(void *proc_ptr, char *proc_name, proc_type_t proc_type) { //f
     proc->trapframe->es = get_es();
     proc->trapframe->fs = get_fs();
     proc->trapframe->gs = get_gs();
-    // figure out if this needs modification? TODO?
 
     // Add the process to the scheduler
     scheduler_add(proc);
@@ -284,6 +287,25 @@ void kproc_init(void) { //f
     kproc_create(kproc_idle, idle, PROC_TYPE_KERNEL);
     scheduler_run();
     kernel_log_info("Process management initialized");// TODO remove this line
+}
+//d
+int kproc_attach_tty(int pid, int tty_number) { //f
+    /** //f
+     * Attaches a process to a TTY
+     * Points the input / output buffers to the TTY's input/output buffers
+     *   IO[0] should be input
+     *   IO[1] should be output
+     */
+    //d
+    proc_t *proc = pid_to_proc(pid);
+    struct tty_t *tty = tty_get(tty_number);
+    if (proc && tty) {
+        kernel_log_debug("Attaching process %d to TTY id to PID %d", proc->pid, tty_number);
+        proc->io[PROC_IO_STDIN] = &(tty->io_input);
+        proc->io[PROC_IO_STDOUT] = &(tty->io_output);
+        return 0;
+    }
+    return -1;
 }
 //d
 
