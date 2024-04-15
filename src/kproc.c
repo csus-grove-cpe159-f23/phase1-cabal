@@ -283,9 +283,21 @@ void kproc_init(void) { //f
     // Create the idle process (kproc_idle) as a kernel process DONE
     // this makes no sense. kproc create relies on the scheduler which is not intialized until after kproc hannah moved this to the scheduler init because that at least makes some more sense
     // ok I think i figured it out. scheduler_init is supposed to be run before the kproc_init because it actually has no dependency on kproc weird right?
-    char * idle = "idle";
-    kproc_create(kproc_idle, idle, PROC_TYPE_KERNEL);
+    //char * idle = "idle";
+    kproc_create(kproc_idle, "idle", PROC_TYPE_KERNEL);
     scheduler_run();
+    //The following code cannot be activated untill the syscall stuff is done
+    /*
+    
+    int pid = kproc_create(prog_shell, "prog1", PROC_TYPE_USER);
+    kproc_attach_tty(pid, 1);
+    int pid2 = kproc_create(prog_shell, "prog1", PROC_TYPE_USER);
+    kproc_attach_tty(pid2, 2);
+    int pid3 = kproc_create(prog_shell, "prog1", PROC_TYPE_USER);
+    kproc_attach_tty(pid3, 3);
+    int pid4 = kproc_create(prog_shell, "prog1", PROC_TYPE_USER);
+    kproc_attach_tty(pid, 4);
+    */
     kernel_log_info("Process management initialized");// TODO remove this line
 }
 //d
