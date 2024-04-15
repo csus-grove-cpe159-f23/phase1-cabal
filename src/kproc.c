@@ -304,7 +304,10 @@ int kproc_attach_tty(int pid, int tty_number) { //f
         proc->io[PROC_IO_IN] = &(tty->io_input);
         proc->io[PROC_IO_OUT] = &(tty->io_output);
         return 0;
+    }else{
+        kernel_log_error("failed to attach process and tty kproc_attach_tty");
     }
+
     return -1;
 }
 //d
