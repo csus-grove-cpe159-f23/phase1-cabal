@@ -15,6 +15,7 @@
 #include "scheduler.h"
 #include "kproc.h"
 #include "test.h"
+#include "ksyscall.h"
 
 int main(void) {
     // Always iniialize the kernel
@@ -41,6 +42,8 @@ int main(void) {
     //THIS NEEDS TO BE AFTER THE SCHEDULER - Hannah
     // Initialize processes
     kproc_init();
+    
+    ksyscall_init();
 
     // Test initialization
     test_init();
