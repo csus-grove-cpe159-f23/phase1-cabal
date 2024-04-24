@@ -10,6 +10,7 @@
 #include <spede/string.h>
 #include <spede/machine/proc_reg.h>
 
+#include "prog_user.h"
 #include "kernel.h"
 #include "trapframe.h"
 #include "kproc.h"
@@ -286,9 +287,6 @@ void kproc_init(void) { //f
     //char * idle = "idle";
     kproc_create(kproc_idle, "idle", PROC_TYPE_KERNEL);
     scheduler_run();
-    //The following code cannot be activated untill the syscall stuff is done
-    /*
-    
     int pid = kproc_create(prog_shell, "prog1", PROC_TYPE_USER);
     kproc_attach_tty(pid, 1);
     int pid2 = kproc_create(prog_shell, "prog1", PROC_TYPE_USER);
@@ -296,8 +294,7 @@ void kproc_init(void) { //f
     int pid3 = kproc_create(prog_shell, "prog1", PROC_TYPE_USER);
     kproc_attach_tty(pid3, 3);
     int pid4 = kproc_create(prog_shell, "prog1", PROC_TYPE_USER);
-    kproc_attach_tty(pid, 4);
-    */
+    kproc_attach_tty(pid4, 4);
     kernel_log_info("Process management initialized");// TODO remove this line
 }
 //d

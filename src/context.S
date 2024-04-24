@@ -7,11 +7,6 @@
 #include <spede/machine/asmacros.h>
 #include "kernel.h"
 #include "interrupts.h"
-#include "kernel.h"
-
-//define kernel stack space
-.comm kstack, KSTACK_SIZE, 1
-.text
 
 // define kernel stack space
 .comm kstack, KSTACK_SIZE, 1
@@ -23,10 +18,18 @@ ENTRY(isr_entry_keyboard)
     pushl $IRQ_KEYBOARD
     // Enter into the kernel context for processing
     jmp kernel_enter
+
 // Timer ISR Entry
 ENTRY(isr_entry_timer)
     // Indicate which interrupt occured
     pushl $IRQ_TIMER
+    // Enter into the kernel context for processing
+    jmp kernel_enter
+
+// System Call ISR Entry
+ENTRY(isr_entry_syscall)
+    // Indicate which interrupt occured
+    pushl $IRQ_SYSCALL
     // Enter into the kernel context for processing
     jmp kernel_enter
 
@@ -75,3 +78,4 @@ ENTRY(kernel_context_exit)
     // before returning
     add $4, %esp
     iret
+
