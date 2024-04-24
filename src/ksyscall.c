@@ -67,6 +67,9 @@ void ksyscall_irq_handler(void) {
         rc = ksyscall_io_flush(arg1);
         active_proc->trapframe->eax = rc;
         return;
+    case SYSCALL_PROC_SLEEP:
+        rc = ksyscall_proc_sleep(arg1);
+        return;
     }
 
     if (active_proc->trapframe->eax == SYSCALL_SYS_GET_TIME) {

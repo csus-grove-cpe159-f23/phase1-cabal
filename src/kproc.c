@@ -289,12 +289,12 @@ void kproc_init(void) { //f
     scheduler_run();
     int pid = kproc_create(prog_shell, "prog1", PROC_TYPE_USER);
     kproc_attach_tty(pid, 1);
-//    int pid2 = kproc_create(prog_shell, "prog1", PROC_TYPE_USER);
-//    kproc_attach_tty(pid2, 2);
-//    int pid3 = kproc_create(prog_shell, "prog1", PROC_TYPE_USER);
-//    kproc_attach_tty(pid3, 3);
-//    int pid4 = kproc_create(prog_shell, "prog1", PROC_TYPE_USER);
-//    kproc_attach_tty(pid4, 4);
+    int pid2 = kproc_create(prog_shell, "prog1", PROC_TYPE_USER);
+    kproc_attach_tty(pid2, 2);
+    int pid3 = kproc_create(prog_shell, "prog1", PROC_TYPE_USER);
+    kproc_attach_tty(pid3, 3);
+    int pid4 = kproc_create(prog_shell, "prog1", PROC_TYPE_USER);
+    kproc_attach_tty(pid4, 4);
     kernel_log_info("Process management initialized");// TODO remove this line
 }
 //d
