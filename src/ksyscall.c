@@ -41,7 +41,7 @@ void ksyscall_irq_handler(void) {
     int arg1 = active_proc->trapframe->ebx;
     int arg2 = active_proc->trapframe->ecx;
     int arg3 = active_proc->trapframe->edx;
-    kernel_log_info("syscall made %x", syscall);
+//    kernel_log_info("syscall made %x", syscall);
 
     switch(syscall){
     case SYSCALL_PROC_GET_PID:
