@@ -183,3 +183,43 @@ int io_read(int io, char *buf, int n) {
 int io_flush(int io) {
     return _syscall1(SYSCALL_IO_FLUSH,io);
 }
+
+/**
+ * Allocates a semaphore from the kernel
+ * @param value - initial semaphore value
+ * @return -1 on error, all other values indicate the semaphore id
+ */
+int sem_init(int value){
+    //TODO
+    return -1;
+}
+
+/**
+ * Destroys a semaphore
+ * @param sem - semaphore id
+ * @return -1 on error, 0 on success
+ */
+int sem_destroy(int sem){
+    //TODO
+    return -1;
+}
+
+/**
+ * Waits on a semaphore
+ * @param sem - semaphore id
+ * @return -1 on error, otherwise the current semaphore count
+ */
+int sem_wait(int sem){
+    //TODO
+    return -1;
+}
+
+/**
+ * Posts a semaphore
+ * @param sem - semaphore id
+ * @return -1 on error, otherwise the current semaphore count
+ */
+int sem_post(int sem){
+    //TODO
+    return -1;
+}
