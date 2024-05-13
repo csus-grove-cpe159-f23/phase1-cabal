@@ -72,5 +72,59 @@ int io_read(int io, char *buf, int n);
  */
 int io_flush(int io);
 
-#endif
+/**
+ * Allocates a mutex from the kernel
+ * @return -1 on error, all other values indicate the mutex id
+ */
+int mutex_init(void);
 
+/**
+ * Detroys a mutex
+ * @return -1 on error, 0 on sucecss
+ */
+int mutex_destroy(int mutex);
+
+/**
+ * Locks the mutex
+ * @param mutex - mutex id
+ * @return -1 on error, 0 on sucecss
+ * @note If the mutex is already locked, process will block/wait.
+ */
+int mutex_lock(int mutex);
+
+/**
+ * Unlocks the mutex
+ * @param mutex - mutex id
+ * @return -1 on error, 0 on sucecss
+ */
+int mutex_unlock(int mutex);
+
+/**
+ * Allocates a semaphore from the kernel
+ * @param value - initial semaphore value
+ * @return -1 on error, all other values indicate the semaphore id
+ */
+int sem_init(int value);
+
+/**
+ * Destroys a semaphore
+ * @param sem - semaphore id
+ * @return -1 on error, 0 on success
+ */
+int sem_destroy(int sem);
+
+/**
+ * Waits on a semaphore
+ * @param sem - semaphore id
+ * @return -1 on error, otherwise the current semaphore count
+ */
+int sem_wait(int sem);
+
+/**
+ * Posts a semaphore
+ * @param sem - semaphore id
+ * @return -1 on error, otherwise the current semaphore count
+ */
+int sem_post(int sem);
+
+#endif
