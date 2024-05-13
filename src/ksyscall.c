@@ -137,8 +137,8 @@ int ksyscall_io_read(int io, char *buf, int size) {
     if(!active_proc->io[io])
         return -1;
     if(io <= PROC_IO_MAX){
-        ringbuf_read_mem(active_proc->io[io], buf, size);
-        return size;
+        int read_length = ringbuf_read_mem(active_proc->io[io], buf, size);
+        return read_length;
     }
     // Using ringbuf_read_mem - Read size bytes from active_proc->io to buf
     return -1;
