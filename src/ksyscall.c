@@ -14,6 +14,7 @@
 #include "interrupts.h"
 #include "scheduler.h"
 #include "timer.h"
+#include "ksem.h"
 
 /**
  * System call IRQ handler
@@ -229,4 +230,40 @@ int ksyscall_proc_get_name(char *name) {
         return -1;
     strncpy(name, active_proc->name, sizeof(active_proc->name));
     return 0;
+}
+
+/**
+ * Allocates a semaphore from the kernel
+ * @param value - initial semaphore value
+ * @return -1 on error, all other values indicate the semaphore id
+ */
+int ksyscall_sem_init(int value){
+    return ksem_init(value);
+}
+
+/**
+ * Destroys a semaphore
+ * @param sem - semaphore id
+ * @return -1 on error, 0 on success
+ */
+int ksyscall_sem_destroy(int sem){
+    return ksem_destroy(sem);
+}
+
+/**
+ * Waits on a semaphore
+ * @param sem - semaphore id
+ * @return -1 on error, otherwise the current semaphore count
+ */
+int ksyscall_sem_wait(int sem){
+    return ksem_wait(sem);
+}
+
+/**
+ * Posts a semaphore
+ * @param sem - semaphore id
+ * @return -1 on error, otherwise the current semaphore count
+ */
+int ksyscall_sem_post(int sem){
+    return ksem_post(sem);
 }

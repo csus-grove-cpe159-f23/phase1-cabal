@@ -66,7 +66,7 @@ int ksem_init(int value) {
     queue_init(&(semaphores[allocated_semaphore].wait_queue));
     // set count to initial value
     semaphores[allocated_semaphore].count = value;
-    return 0;
+    return allocated_semaphore;
 }
 
 /**
