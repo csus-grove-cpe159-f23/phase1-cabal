@@ -71,6 +71,18 @@ void ksyscall_irq_handler(void) {
     case SYSCALL_PROC_SLEEP:
         rc = ksyscall_proc_sleep(arg1);
         return;
+    case SYSCALL_SEM_INIT:
+        rc = ksyscall_sem_init(arg1);
+        return;
+    case SYSCALL_SEM_DESTROY:
+        rc = ksyscall_sem_destroy(arg1);
+        return;
+    case SYSCALL_SEM_WAIT:
+        rc = ksyscall_sem_wait(arg1);
+        return;
+    case SYSCALL_SEM_POST:
+        rc = ksyscall_sem_post(arg1);
+        return;
     }
 
     if (active_proc->trapframe->eax == SYSCALL_SYS_GET_TIME) {
