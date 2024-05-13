@@ -174,7 +174,7 @@ void scheduler_sleep(proc_t *proc, int seconds){ //f
  * @param seconds - number of seconds to sleep
  */
 //d
-    proc->sleep_time = 1000*seconds;
+    proc->sleep_time = 100*seconds;
     proc->state = SLEEPING;
     if(remove_item_from_queue(&run_queue, proc->pid)){
         // if we find our item in the run queue, move it to the sleep queue
