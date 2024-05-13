@@ -14,6 +14,7 @@
 #include "interrupts.h"
 #include "scheduler.h"
 #include "timer.h"
+#include "ksem.h"
 
 /**
  * System call IRQ handler
@@ -69,6 +70,18 @@ void ksyscall_irq_handler(void) {
         return;
     case SYSCALL_PROC_SLEEP:
         rc = ksyscall_proc_sleep(arg1);
+        return;
+    case SYSCALL_SEM_INIT:
+        rc = ksyscall_sem_init(arg1);
+        return;
+    case SYSCALL_SEM_DESTROY:
+        rc = ksyscall_sem_destroy(arg1);
+        return;
+    case SYSCALL_SEM_WAIT:
+        rc = ksyscall_sem_wait(arg1);
+        return;
+    case SYSCALL_SEM_POST:
+        rc = ksyscall_sem_post(arg1);
         return;
     }
 
@@ -229,4 +242,40 @@ int ksyscall_proc_get_name(char *name) {
         return -1;
     strncpy(name, active_proc->name, sizeof(active_proc->name));
     return 0;
+}
+
+/**
+ * Allocates a semaphore from the kernel
+ * @param value - initial semaphore value
+ * @return -1 on error, all other values indicate the semaphore id
+ */
+int ksyscall_sem_init(int value){
+    return ksem_init(value);
+}
+
+/**
+ * Destroys a semaphore
+ * @param sem - semaphore id
+ * @return -1 on error, 0 on success
+ */
+int ksyscall_sem_destroy(int sem){
+    return ksem_destroy(sem);
+}
+
+/**
+ * Waits on a semaphore
+ * @param sem - semaphore id
+ * @return -1 on error, otherwise the current semaphore count
+ */
+int ksyscall_sem_wait(int sem){
+    return ksem_wait(sem);
+}
+
+/**
+ * Posts a semaphore
+ * @param sem - semaphore id
+ * @return -1 on error, otherwise the current semaphore count
+ */
+int ksyscall_sem_post(int sem){
+    return ksem_post(sem);
 }

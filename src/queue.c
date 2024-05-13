@@ -97,3 +97,21 @@ int queue_out(queue_t *queue, int *item) {
 
     return 0;
 }
+
+/**
+ * Indicates if the queue is empty
+ * @param queue - pointer to the queue structure
+ * @return true if empty, false if not empty
+ */
+bool queue_is_empty(queue_t *queue){
+    return queue->size == 0;
+}
+
+/**
+ * Indicates if the queue if full
+ * @param queue - pointer to the queue structure
+ * @return true if full, false if not full
+ */
+bool queue_is_full(queue_t *queue){
+    return queue->size == QUEUE_SIZE;
+}
