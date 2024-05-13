@@ -109,8 +109,10 @@ int ksyscall_io_write(int io, char *buf, int size) {
     if(!active_proc)
         kernel_panic("No active process!");
     // Ensure the IO buffer is withing range (PROC_IO_MAX)
-    if(io <= PROC_IO_MAX)
+    if((io > PROC_IO_MAX)||(io < 0)){
+        kernel_log_error("Out of range IO buffer specified, ksyscall_io_write");
         return -1;
+    }
     // Ensure that the active process has valid io
     // If not active_proc->....
     if(active_proc->io[io]){
@@ -151,8 +153,10 @@ int ksyscall_io_flush(int io) {
     if(!active_proc)
         kernel_panic("No active process!");
     // Ensure active process, etc...
-    if(io <= PROC_IO_MAX)
-       return -1;
+    if((io > PROC_IO_MAX)||(io < 0)){
+        kernel_log_error("Out of range IO buffer specified, ksyscall_io_flush");
+        return -1;
+    }
     if(active_proc->io[io]){
         ringbuf_flush(active_proc->io[io]);
         return 0;
