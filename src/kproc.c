@@ -18,6 +18,8 @@
 #include "timer.h"
 #include "queue.h"
 #include "vga.h"
+#include "syscall_common.h"
+
 //d
 //f declare static variables
 // Next available process id to be assigned
@@ -295,6 +297,20 @@ void kproc_init(void) { //f
     kproc_attach_tty(pid3, 3);
     int pid4 = kproc_create(prog_shell, "prog1", PROC_TYPE_USER);
     kproc_attach_tty(pid4, 4);
+
+    for (int i = 0; i < 3; i++) {
+        pid = kproc_create(prog_ping, "ping", PROC_TYPE_USER);
+        kernel_log_debug("Created ping process %d", pid);
+
+        kproc_attach_tty(pid, (TTY_MAX - (pid % 2) - 1));
+    }
+
+    for (int i = 0; i < 3; i++) {
+        pid = kproc_create(prog_pong, "pong", PROC_TYPE_USER);
+        kernel_log_debug("Created pong process %d", pid);
+
+        kproc_attach_tty(pid, (TTY_MAX - (pid % 2) - 1));
+    }
     kernel_log_info("Process management initialized");// TODO remove this line
 }
 //d
