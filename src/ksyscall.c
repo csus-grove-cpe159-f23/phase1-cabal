@@ -15,6 +15,7 @@
 #include "scheduler.h"
 #include "timer.h"
 #include "ksem.h"
+#include "kmutex.h"
 
 /**
  * System call IRQ handler
@@ -279,3 +280,40 @@ int ksyscall_sem_wait(int sem){
 int ksyscall_sem_post(int sem){
     return ksem_post(sem);
 }
+
+
+/**
+ * Allocates a mutex from the kernel
+ * @return -1 on error, all other values indicate the mutex id
+ */
+int ksyscall_mutex_init(void) {
+    return kmutex_init();
+}
+
+/**
+ * Detroys a mutex
+ * @return -1 on error, 0 on sucecss
+ */
+int ksyscall_mutex_destroy(int mutex) {
+    return kmutex_destroy(mutex);
+}
+
+/**
+ * Locks the mutex
+ * @param mutex - mutex id
+ * @return -1 on error, 0 on sucecss
+ * @note If the mutex is already locked, process will block/wait.
+ */
+int ksyscall_mutex_lock(int mutex) {
+    return kmutex_lock(mutex);
+}
+
+/**
+ * Unlocks the mutex
+ * @param mutex - mutex id
+ * @return -1 on error, 0 on sucecss
+ */
+int ksyscall_mutex_unlock(int mutex) {
+    return kmutex_unlock(mutex);
+}
+
