@@ -244,7 +244,7 @@ int mutex_destroy(int mutex) {
  * @note If the mutex is already locked, process will block/wait.
  */
 int mutex_lock(int mutex) {
-    return -1;
+    return _syscall1(SYSCALL_MUTEX_LOCK, mutex);
 }
 
 /**
@@ -253,5 +253,5 @@ int mutex_lock(int mutex) {
  * @return -1 on error, 0 on sucecss
  */
 int mutex_unlock(int mutex) {
-    return -1;
+    return _syscall1(SYSCALL_MUTEX_UNLOCK, mutex);
 }

@@ -100,14 +100,21 @@ int kmutex_destroy(int id) {
  */
 int kmutex_lock(int id) {
     // look up the mutex in the mutex table
-
+    if (id < 0 || id >= MUTEX_MAX || !mutexes[id].allocated) return -1;
     // If the mutex is already locked
     //   1. Set the active process state to WAITING
     //   2. Add the process to the mutex wait queue (so it can take
     //      the mutex when it is unlocked)
     //   3. Remove the process from the scheduler, allow another
     //      process to be scheduled
-
+    if(mutexes[id].locks > 0){
+        queue_in(&mutex_queue, id);
+        active_proc->state = WAITING;
+        scheduler_remove(active_proc);
+    }else{
+        mutexes[id].owner = active_proc;
+        ++mutexes[id].locks;
+    }
     // If the mutex is not locked
     //   1. set the mutex owner to the active process
 
@@ -115,7 +122,7 @@ int kmutex_lock(int id) {
 
     // Return the mutex lock count
 
-    return -1;
+    return mutexes[id].locks;
 }
 
 /**
@@ -125,14 +132,25 @@ int kmutex_lock(int id) {
  */
 int kmutex_unlock(int id) {
     // look up the mutex in the mutex table
-
+    if (id < 0 || id >= MUTEX_MAX || !mutexes[id].allocated) return -1;
     // If the mutex is not locked, there is nothing to do
-
+    if(mutexes[id].locks == 0)
+        return 0;
     // Decrement the lock count
-
+    --mutexes[id].locks;
     // If there are no more locks held:
     //    1. clear the owner of the mutex
-
+    if(mutexes[id].locks == 0){
+        mutexes[id].owner = NULL;
+    }else{
+        int* processID = NULL;
+        proc_t* process;
+        if(queue_out(&mutex_queue, processID)){
+            process = pid_to_proc(*processID);
+            scheduler_add(process);
+            mutexes[id].owner = process;
+        }
+    }
     // If there are still locks held:
     //    1. Obtain a process from the mutex wait queue
     //    2. Add the process back to the scheduler
@@ -140,6 +158,6 @@ int kmutex_unlock(int id) {
 
     // return the mutex lock count
 
-    return -1;
+    return mutexes[id].locks;
 }
 
