@@ -72,6 +72,18 @@ void ksyscall_irq_handler(void) {
     case SYSCALL_PROC_SLEEP:
         rc = ksyscall_proc_sleep(arg1);
         return;
+    case SYSCALL_MUTEX_INIT:
+        rc = ksyscall_mutex_init();
+        return;
+    case SYSCALL_MUTEX_DESTROY:
+        rc = ksyscall_mutex_destroy(arg1);
+        return;
+    case SYSCALL_MUTEX_LOCK:
+        rc = ksyscall_mutex_lock(arg1);
+        return;
+    case SYSCALL_MUTEX_UNLOCK:
+        rc = ksyscall_mutex_unlock(arg1);
+        return;
     case SYSCALL_SEM_INIT:
         rc = ksyscall_sem_init(arg1);
         return;
