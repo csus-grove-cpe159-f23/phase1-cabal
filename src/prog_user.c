@@ -23,6 +23,12 @@
 #define CMD_HELP "help"
 #define CMD_SLEEP "sleep"
 #define CMD_TIME "time"
+#define CMD_LOCK "lock"
+
+/*
+ * Mutexes for the lock
+ */
+int shell_mutex[2] = {-1, -1};
 
 void prog_shell(void) {
     char buf[BUF_SIZE];
@@ -33,6 +39,10 @@ void prog_shell(void) {
     int reading;
 
     int pid = proc_get_pid();
+
+    if (shell_mutex[pid % 2] < 0) {
+        shell_mutex[pid % 2 ] = mutex_init();
+    }
 
     if (proc_get_name(name) != 0) {
         pprintf("error getting process name!");
@@ -67,6 +77,7 @@ void prog_shell(void) {
 
         reading = 1;
         while (reading) {
+            mutex_lock(shell_mutex[pid % 2]);
             buflen = io_read(PROC_IO_IN, buf, BUF_SIZE);
 
             for (int i = 0; i < buflen; i++) {
@@ -78,12 +89,14 @@ void prog_shell(void) {
                     io_write(PROC_IO_OUT, &buf[i], 1);
                 }
             }
+            mutex_unlock(shell_mutex[pid % 2]);
         }
 
         if (input_len) {
             if (strncmp(input, CMD_HELP, strlen(CMD_HELP)) == 0) {
                 pprintf("Enter one of the following commands:\n");
                 pprintf("\texit\t  exits the process\n");
+                pprintf("\tlock\t  takes a lock that may block other shells\n");
                 pprintf("\tsleep\t  puts the process to sleep for %d seconds\n", sleep_seconds);
                 pprintf("\ttime\t  displays the current system time\n");
                 pprintf("\n");
@@ -96,6 +109,11 @@ void prog_shell(void) {
             } else if (strncmp(input, CMD_EXIT, strlen(CMD_EXIT)) == 0) {
                 pprintf("Exiting process id %d\n", pid);
                 proc_exit(0);
+            } else if (strncmp(input, CMD_LOCK, strlen(CMD_LOCK)) == 0) {
+                pprintf("Locking shells for %d seconds\n", sleep_seconds);
+                mutex_lock(shell_mutex[pid % 2]);
+                proc_sleep(sleep_seconds);
+                mutex_unlock(shell_mutex[pid % 2]);
             } else {
                 pprintf("You entered the following:\n%s\n", input);
             }
@@ -103,3 +121,53 @@ void prog_shell(void) {
     }
 }
 
+/*
+ * Semaphores used for the "pingpong" program
+ */
+int pingpong_semaphores[2] = {-1, -1};
+
+void prog_ping(void) {
+    int pid = proc_get_pid();
+
+    int *ping = &pingpong_semaphores[0];
+    int *pong = &pingpong_semaphores[1];
+
+    if (*ping < 0) {
+        *ping = sem_init(1);
+    }
+
+    if (*pong < 0) {
+        *pong = sem_init(0);
+    }
+
+    sem_post(*pong);
+
+    while (1) {
+        sem_wait(*ping);
+        pprintf("%04d pingpong[%02d] ping!\n", sys_get_time(), pid);
+        proc_sleep((pid % 2) + 3);
+        sem_post(*pong);
+    }
+}
+
+void prog_pong(void) {
+    int pid = proc_get_pid();
+
+    int *ping = &pingpong_semaphores[0];
+    int *pong = &pingpong_semaphores[1];
+
+    if (*ping < 0) {
+        *ping = sem_init(0);
+    }
+
+    if (*pong < 0) {
+        *pong = sem_init(1);
+    }
+
+    while (1) {
+        sem_wait(*pong);
+        pprintf("%04d pingpong[%02d] pong!\n", sys_get_time(), pid);
+        proc_sleep((pid % 2) + 2);
+        sem_post(*ping);
+    }
+}

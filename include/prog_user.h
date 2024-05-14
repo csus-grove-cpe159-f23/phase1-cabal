@@ -3,4 +3,7 @@
 
 void prog_shell(void);
 
+void prog_ping(void);
+void prog_pong(void);
+
 #endif
