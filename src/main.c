@@ -16,6 +16,8 @@
 #include "kproc.h"
 #include "test.h"
 #include "ksyscall.h"
+#include "kmutex.h"
+#include "ksem.h"
 
 int main(void) {
     // Always iniialize the kernel
@@ -44,6 +46,10 @@ int main(void) {
     kproc_init();
     
     ksyscall_init();
+
+    ksemaphores_init();
+
+    kmutexes_init();
 
     // Test initialization
     test_init();

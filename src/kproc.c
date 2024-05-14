@@ -287,6 +287,7 @@ void kproc_init(void) { //f
     //char * idle = "idle";
     kproc_create(kproc_idle, "idle", PROC_TYPE_KERNEL);
     scheduler_run();
+    /*
     int pid = kproc_create(prog_shell, "prog1", PROC_TYPE_USER);
     kproc_attach_tty(pid, 1);
     int pid2 = kproc_create(prog_shell, "prog1", PROC_TYPE_USER);
@@ -295,6 +296,18 @@ void kproc_init(void) { //f
     kproc_attach_tty(pid3, 3);
     int pid4 = kproc_create(prog_shell, "prog1", PROC_TYPE_USER);
     kproc_attach_tty(pid4, 4);
+    */
+    // for some reason we are attaching programs to a tty based on if the pid is even or not. This was part of the specification for the test. Kinda weird but ok!
+    for (int i=0; i<3; i++){
+        int pid = kproc_create(prog_ping, "ping", PROC_TYPE_USER);
+        kernel_log_debug("Created ping process %d", pid);
+        kproc_attach_tty(pid, (TTY_MAX) - 1 - (pid % 2));
+    }
+    for (int i=0; i<3; i++){
+        int pid = kproc_create(prog_pong, "pong", PROC_TYPE_USER);
+        kernel_log_debug("Created pong process %d", pid);
+        kproc_attach_tty(pid, (TTY_MAX) - 1 - (pid % 2));
+    }
     kernel_log_info("Process management initialized");// TODO remove this line
 }
 //d

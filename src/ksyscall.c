@@ -44,70 +44,79 @@ void ksyscall_irq_handler(void) {
     int arg2 = active_proc->trapframe->ecx;
     int arg3 = active_proc->trapframe->edx;
 //    kernel_log_info("syscall made %x", syscall);
+    proc_t * proc = active_proc;
 
     switch(syscall){
     case SYSCALL_PROC_GET_PID:
         rc = ksyscall_proc_get_pid();
-        active_proc->trapframe->eax = rc;
+        proc->trapframe->eax = rc;
         return;
     case SYSCALL_PROC_GET_NAME:
         rc = ksyscall_proc_get_name((char*)arg1);
-        active_proc->trapframe->eax = rc;
+        proc->trapframe->eax = rc;
         return;
     case SYSCALL_PROC_EXIT:
         ksyscall_proc_exit();
         return;
     case SYSCALL_IO_WRITE:
         rc = ksyscall_io_write(arg1,(char*)arg2, arg3);
-        active_proc->trapframe->eax = rc;
+        proc->trapframe->eax = rc;
         return;
     case SYSCALL_IO_READ:
         rc = ksyscall_io_read(arg1, (char*)arg2, arg3);
-        active_proc->trapframe->eax = rc;
+        proc->trapframe->eax = rc;
         return;
     case SYSCALL_IO_FLUSH:
         rc = ksyscall_io_flush(arg1);
-        active_proc->trapframe->eax = rc;
+        proc->trapframe->eax = rc;
         return;
     case SYSCALL_PROC_SLEEP:
         rc = ksyscall_proc_sleep(arg1);
         return;
     case SYSCALL_MUTEX_INIT:
         rc = ksyscall_mutex_init();
+        proc->trapframe->eax = rc;
         return;
     case SYSCALL_MUTEX_DESTROY:
         rc = ksyscall_mutex_destroy(arg1);
+        proc->trapframe->eax = rc;
         return;
     case SYSCALL_MUTEX_LOCK:
         rc = ksyscall_mutex_lock(arg1);
+        proc->trapframe->eax = rc;
         return;
     case SYSCALL_MUTEX_UNLOCK:
         rc = ksyscall_mutex_unlock(arg1);
+        proc->trapframe->eax = rc;
         return;
     case SYSCALL_SEM_INIT:
         rc = ksyscall_sem_init(arg1);
+        proc->trapframe->eax = rc;
         return;
     case SYSCALL_SEM_DESTROY:
         rc = ksyscall_sem_destroy(arg1);
+        proc->trapframe->eax = rc;
         return;
     case SYSCALL_SEM_WAIT:
         rc = ksyscall_sem_wait(arg1);
+        proc->trapframe->eax = rc;
         return;
     case SYSCALL_SEM_POST:
         rc = ksyscall_sem_post(arg1);
+        proc->trapframe->eax = rc;
         return;
     }
 
-    if (active_proc->trapframe->eax == SYSCALL_SYS_GET_TIME) {
+    if (proc->trapframe->eax == SYSCALL_SYS_GET_TIME) {
         rc = ksyscall_sys_get_time();
-        active_proc->trapframe->eax = rc;
+        proc->trapframe->eax = rc;
         return;
     }
 
-    if (active_proc->trapframe->eax == SYSCALL_SYS_GET_NAME) {
+    if (proc->trapframe->eax == SYSCALL_SYS_GET_NAME) {
         // Cast the argument as a char pointer
-        rc = ksyscall_sys_get_name((char *)active_proc->trapframe->ebx);
-        active_proc->trapframe->eax = rc;
+        rc = ksyscall_sys_get_name((char *)proc->trapframe->ebx);
+        proc->trapframe->eax = rc;
         return;
     }
 

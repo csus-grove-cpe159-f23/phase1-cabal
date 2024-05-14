@@ -90,8 +90,14 @@ void test_proc_list(void) {
                 fg_color = VGA_COLOR_YELLOW;
                 break;
 
+            case WAITING:
+                state = 'W';
+                fg_color = VGA_COLOR_BROWN;
+                break;
+
             default:
                 state = '?';
+                fg_color = VGA_COLOR_DARK_GREY;
                 break;
         }
 

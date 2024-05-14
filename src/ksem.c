@@ -66,6 +66,7 @@ int ksem_init(int value) {
     queue_init(&(semaphores[allocated_semaphore].wait_queue));
     // set count to initial value
     semaphores[allocated_semaphore].count = value;
+    kernel_log_trace("Semaphore allocated: %d ksem_init", allocated_semaphore);
     return allocated_semaphore;
 }
 
@@ -86,6 +87,7 @@ int ksem_destroy(int id) {
     }
     if(semaphore->allocated == 0){
         kernel_log_error("Attempted to destroy an inactive semaphore ksem_destroy");
+        kernel_break();
         return -1;
     }
 
@@ -119,7 +121,8 @@ int ksem_wait(int id) {
         return -1;
     }
     if(semaphore->allocated == 0){
-        kernel_log_error("Attempted to wait on inactive semaphore ksem_wait");
+        kernel_log_error("Attempted to wait on inactive semaphore: %d ksem_wait", id);
+        kernel_break();
         return -1;
     }
 
@@ -158,7 +161,8 @@ int ksem_post(int id) {
         return -1;
     }
     if(semaphore->allocated == 0){
-        kernel_log_error("Attempted to post to inactive semaphore ksem_post");
+        kernel_log_error("Attempted to post to inactive semaphore: %d ksem_post", id);
+        kernel_break();
         return -1;
     }
 
