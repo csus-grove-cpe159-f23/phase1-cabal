@@ -12,7 +12,7 @@
 #include "queue.h"
 
 #ifndef PROC_MAX
-#define PROC_MAX        10   // maximum number of processes to support
+#define PROC_MAX        20   // maximum number of processes to support
 #endif
 
 #define PROC_IO_MAX     4    // Maximum process I/O buffers

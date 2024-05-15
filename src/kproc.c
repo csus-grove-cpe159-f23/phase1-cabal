@@ -287,16 +287,14 @@ void kproc_init(void) { //f
     //char * idle = "idle";
     kproc_create(kproc_idle, "idle", PROC_TYPE_KERNEL);
     scheduler_run();
-    /*
-    int pid = kproc_create(prog_shell, "prog1", PROC_TYPE_USER);
+    int pid = kproc_create(prog_shell, "shell", PROC_TYPE_USER);
     kproc_attach_tty(pid, 1);
-    int pid2 = kproc_create(prog_shell, "prog1", PROC_TYPE_USER);
+    int pid2 = kproc_create(prog_shell, "shell", PROC_TYPE_USER);
     kproc_attach_tty(pid2, 2);
-    int pid3 = kproc_create(prog_shell, "prog1", PROC_TYPE_USER);
+    int pid3 = kproc_create(prog_shell, "shell", PROC_TYPE_USER);
     kproc_attach_tty(pid3, 3);
-    int pid4 = kproc_create(prog_shell, "prog1", PROC_TYPE_USER);
+    int pid4 = kproc_create(prog_shell, "shell", PROC_TYPE_USER);
     kproc_attach_tty(pid4, 4);
-    */
     // for some reason we are attaching programs to a tty based on if the pid is even or not. This was part of the specification for the test. Kinda weird but ok!
     for (int i=0; i<3; i++){
         int pid = kproc_create(prog_ping, "ping", PROC_TYPE_USER);

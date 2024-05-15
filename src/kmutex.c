@@ -52,10 +52,16 @@ int kmutex_init(void) {
     int id;
 
     // Obtain a mutex id from the mutex queue
-    if (queue_out(&mutex_queue, &id) == -1) return -1; // No available mutex IDs
+    if (queue_out(&mutex_queue, &id) == -1){
+        kernel_log_error("Unable to allocate mutex kmutex_init");
+        return -1;
+    }
 
     // Ensure that the id is within the valid range
-    if (id < 0 || id >= MUTEX_MAX) return -1;
+    if (id < 0 || id >= MUTEX_MAX){
+        kernel_log_error("Mutex allocator gave invalide mutex %d kmutex_init", id);
+        return -1;
+    }
 
     // Pointer to the mutex table entry
     mutex_t *mutex = &mutexes[id];
@@ -65,6 +71,8 @@ int kmutex_init(void) {
     mutex->locks = 0;       // No locks held
     mutex->owner = NULL;    // No owner
     queue_init(&mutex->wait_queue); // Initialize wait queue
+
+    kernel_log_trace("Mutex allocated %d kmutex_init", id);
 
     // Return the mutex id
     return id;
@@ -77,11 +85,22 @@ int kmutex_init(void) {
  * @return 0 on success, -1 on error
  */
 int kmutex_destroy(int id) {
-    // Look up the mutex in the mutex table
-    if (id < 0 || id >= MUTEX_MAX || !mutexes[id].allocated) return -1;
+    // check mutex validity
+    if (id < 0 || id >= MUTEX_MAX){
+        kernel_log_error("Attempted to destroy out of range mutex %d kmutex_destroy", id);
+        return -1;
+    }
+    if (!mutexes[id].allocated){
+        kernel_log_error("Attempted to destroy unallocated mutex %d kmutex_destroy", id);
+        return -1;
+    }
 
     // If the mutex is locked, prevent it from being destroyed (return error)
-    if (mutexes[id].locks > 0) return -1;
+    if (mutexes[id].locks > 0){
+        kernel_log_error("Attempted to destroy locked mutex mutex id: %d kmutex_destroy", id);
+        kernel_log_error("Attempted to destroy locked mutex owner pid: %d kmutex_destroy", mutexes[id].owner->pid);
+        return -1;
+    }
 
     // Add the id back into the mutex queue to be re-used later
     queue_in(&mutex_queue, id);
@@ -99,8 +118,15 @@ int kmutex_destroy(int id) {
  * @return -1 on error, otherwise the current lock count
  */
 int kmutex_lock(int id) {
-    // look up the mutex in the mutex table
-    if (id < 0 || id >= MUTEX_MAX || !mutexes[id].allocated) return -1;
+    // check mutex validity
+    if (id < 0 || id >= MUTEX_MAX){
+        kernel_log_error("Attempted to lock out of range mutex %d kmutex_lock", id);
+        return -1;
+    }
+    if (!mutexes[id].allocated){
+        kernel_log_error("Attempted to lock unallocated mutex %d kmutex_lock", id);
+        return -1;
+    }
     // If the mutex is already locked
     //   1. Set the active process state to WAITING
     //   2. Add the process to the mutex wait queue (so it can take
@@ -108,20 +134,20 @@ int kmutex_lock(int id) {
     //   3. Remove the process from the scheduler, allow another
     //      process to be scheduled
     if(mutexes[id].locks > 0){
-        queue_in(&mutex_queue, id);
+        queue_in(&(mutexes[id].wait_queue), active_proc->pid);
         active_proc->state = WAITING;
         scheduler_remove(active_proc);
-    }else{
-        mutexes[id].owner = active_proc;
-        ++mutexes[id].locks;
     }
     // If the mutex is not locked
     //   1. set the mutex owner to the active process
+    else{
+        mutexes[id].owner = active_proc;
+    }
 
     // Increment the lock count
+    ++mutexes[id].locks;
 
     // Return the mutex lock count
-
     return mutexes[id].locks;
 }
 
@@ -131,11 +157,20 @@ int kmutex_lock(int id) {
  * @return -1 on error, otherwise the current lock count
  */
 int kmutex_unlock(int id) {
-    // look up the mutex in the mutex table
-    if (id < 0 || id >= MUTEX_MAX || !mutexes[id].allocated) return -1;
+    // check mutex validity
+    if (id < 0 || id >= MUTEX_MAX){
+        kernel_log_error("Attempted to unlock out of range mutex %d kmutex_unlock", id);
+        return -1;
+    }
+    if (!mutexes[id].allocated){
+        kernel_log_error("Attempted to unlock unallocated mutex %d kmutex_unlock", id);
+        return -1;
+    }
     // If the mutex is not locked, there is nothing to do
-    if(mutexes[id].locks == 0)
+    // making this just silently return a success feels OMINOUS but ok - Hannah
+    if(mutexes[id].locks == 0){
         return 0;
+    }
     // Decrement the lock count
     --mutexes[id].locks;
     // If there are no more locks held:
@@ -143,12 +178,16 @@ int kmutex_unlock(int id) {
     if(mutexes[id].locks == 0){
         mutexes[id].owner = NULL;
     }else{
-        int* processID = NULL;
+        // if there are other locks retrieve the next process and have it take ownership
+        int processID = -1;
         proc_t* process;
-        if(queue_out(&mutex_queue, processID)){
-            process = pid_to_proc(*processID);
+        if(queue_out(&(mutexes[id].wait_queue), &processID) != -1){
+            process = pid_to_proc(processID);
             scheduler_add(process);
             mutexes[id].owner = process;
+        }
+        else{
+            kernel_log_error("Mutex queue read failure kmutex_unlock");
         }
     }
     // If there are still locks held:
